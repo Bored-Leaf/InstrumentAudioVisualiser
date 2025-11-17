@@ -1,0 +1,1 @@
+Displays the frequencies/spectrogram/sound wave displacement of a currently played instrument through an audio interface.

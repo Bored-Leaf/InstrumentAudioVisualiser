@@ -1,0 +1,13 @@
+{
+  "legacyEditor": false,
+  "livePreview": false,
+  "showLineNumber": true,
+  "promptDelete": true,
+  "fileSortOrder": "alphabetical",
+  "alwaysUpdateLinks": true,
+  "strictLineBreaks": false,
+  "showFrontmatter": false,
+  "tabSize": 4,
+  "defaultViewMode": "source",
+  "readableLineLength": false
+}
