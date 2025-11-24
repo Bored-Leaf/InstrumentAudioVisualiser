@@ -1,8 +1,12 @@
+#include <cstdint>
+
 class IAudioSource {
 public:
-    virtual void getSampleRate() = 0;
-    virtual void getSamples() = 0;
-private:
-    virtual bool isFinished() = 0;
-    virtual bool isStero() = 0;
+    virtual ~IAudioSource(){};  // Move to cpp file if body needs content
+    virtual uint32_t getSampleRate() = 0;
+
+protected:
+    IAudioSource() : m_sampleRate{} {}
+
+    uint32_t m_sampleRate;
 };
