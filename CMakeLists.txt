@@ -5,7 +5,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-add_executable(InstrumentAudioVisualiser src/main.cpp)
+file(GLOB SOURCE_FILES "src/*.cpp")
+
+add_executable(
+    InstrumentAudioVisualiser
+    ${SOURCE_FILES}
+)
 
 target_include_directories(InstrumentAudioVisualiser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR/include})
 
