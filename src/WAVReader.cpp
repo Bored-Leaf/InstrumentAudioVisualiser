@@ -4,17 +4,64 @@
 #define DR_WAV_IMPLEMENTATION
 #include "../include/WAVReader.h"
 
-WAVReader::WAVReader(const std::string &filePath) : m_wav{} {
+// ========== Public ==========
+
+WAVReader::WAVReader(const std::string& filePath) 
+                : m_wav{}
+                , m_sampleRate{}
+                , m_channels{}
+                , m_bitsPerSample{}
+                , audioData{} {
     if (!drwav_init_file(&m_wav, filePath.c_str(), NULL)) {
         std::string errorMsg{"Error opening WAV file at: "};
         throw std::invalid_argument(errorMsg + filePath);
     }
 
     m_sampleRate = m_wav.sampleRate;
+    m_channels = m_wav.channels;
+    m_bitsPerSample = m_wav.bitsPerSample;
+
+    loadPcmData();
 
     std::cout << "Read WAV file successfully\n";
 }
 
-uint32_t WAVReader::getSampleRate() {
+uint32_t WAVReader::getSampleRate() const {
     return m_sampleRate;
 }
+
+uint16_t WAVReader::getChannels() const {
+    return m_channels;
+}
+
+uint16_t WAVReader::getBitsPerSample() const {
+    return m_bitsPerSample;
+}
+
+std::vector<float> WAVReader::getSamples(int amount) {
+    std::vector<float> samples(amount);
+
+    for (int i = 0; i < amount; ++i) {
+        samples[i] = audioData[i];
+    }
+    
+    return samples;
+}
+
+// ========== Private ==========
+
+void WAVReader::loadPcmData() {
+    uint64_t totalFrames = m_wav.totalPCMFrameCount;
+    audioData.resize(totalFrames * m_channels);
+
+    drwav_read_pcm_frames_f32(&m_wav, totalFrames, audioData.data());
+}
+
+// drwav_read_pcm_frames_f32() to get pcm samples
+/*Use something like:
+unsigned long long totalFrames = wav.totalPCMFrameCount;
+std::vector<float> audioData(totalFrames * wav.channels);
+
+drwav_uint64 framesRead = drwav_read_pcm_frames_f32(&wav, totalFrames, audioData
+to store data in std::vector instead of using float*
+*/
