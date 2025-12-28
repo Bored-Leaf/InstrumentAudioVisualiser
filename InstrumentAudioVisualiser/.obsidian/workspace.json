@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Progression.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
@@ -155,9 +155,9 @@
   },
   "active": "4cfbacc2a9a997c1",
   "lastOpenFiles": [
-    "Welcome.md",
     "Features/Visualisation/Overview.md",
     "Progression.md",
+    "Welcome.md",
     "Making more practical/Overview.md",
     "Structure for now.md",
     "TODO.md",

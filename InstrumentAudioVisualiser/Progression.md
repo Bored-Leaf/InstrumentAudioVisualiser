@@ -7,7 +7,7 @@ Load the WAV file and print info:
 - Waveform
 	- [x] What data is needed for a waveform?
 		- Wav PCM data.
-	- [ ] How is a waveform calculated?
+	- [x] How is a waveform calculated?
 		- Normalising PCM data for each sample.
 - print the waveform in terminal to validate
 	- [ ] print the sample data and also dashes representing a sort of waveform.
@@ -61,6 +61,9 @@ Want it to simulate real-time flow
 - [ ] 
  
 # Real-time audio
-- [ ] 
+
+# MIDI Support
+- [ ] reads midi data
+- [ ] Real-time rendering
 
 # [[Features/Visualisation/Overview|More Visualisations]]
