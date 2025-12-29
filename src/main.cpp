@@ -5,7 +5,6 @@
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
 
-//--stdlib=libc++
 int main(int, char**){
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
