@@ -2,8 +2,8 @@
     "version": 8,
     "configurePresets": [
         {
-            "name": "Clang 21.1.0 x86_64-pc-windows-msvc",
-            "displayName": "Clang 21.1.0 x86_64-pc-windows-msvc",
+            "name": "Clang 21.1.8 x86_64-pc-windows-msvc",
+            "displayName": "Clang 21.1.8 x86_64-pc-windows-msvc",
             "description": "Using compilers for windows",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
