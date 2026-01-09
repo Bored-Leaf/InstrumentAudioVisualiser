@@ -18,6 +18,7 @@ int main(int, char**){
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
+    // FEATURE: Add support for stereo and non 0DBFS.
 
     if (WAVFile->getChannels() > 1) {
         std::print("Terminal style waveform supports 1 channel\n");
