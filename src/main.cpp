@@ -18,6 +18,12 @@ int main(int, char**){
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
+
+    if (WAVFile->getChannels() > 1) {
+        std::print("Terminal style waveform supports 1 channel\n");
+        return;
+    }
+
     std::vector<float> samples = WAVFile->getSamples(441);
 
     int dashedAmount{};
@@ -25,6 +31,12 @@ void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
     int width{30};
 
     for (auto sample : samples) {
+
+        if (abs(sample) > 1.0 || abs(sample) < -1.0) {
+            std::print("Terminal style waveform only support 0dDBFS");
+            return;
+        }
+
         sampleAmount = static_cast<int>(sample*(float)width);
         dashedAmount = abs(sampleAmount);
         if (sample > 0) {
