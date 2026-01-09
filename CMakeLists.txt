@@ -13,8 +13,10 @@ add_executable(
     ${SOURCE_FILES}
 )
 
-target_compile_options(InstrumentAudioVisualiser PRIVATE -stdlib=libc++)
-target_link_options(InstrumentAudioVisualiser PRIVATE -stdlib=libc++ -lc++abi)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_options(InstrumentAudioVisualiser PRIVATE -stdlib=libc++)
+    target_link_options(InstrumentAudioVisualiser PRIVATE -stdlib=libc++ -lc++abi)
+endif()
 
 target_include_directories(InstrumentAudioVisualiser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR/include})
 
