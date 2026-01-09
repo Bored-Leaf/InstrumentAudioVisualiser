@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <print>
 
 #include "../include/WAVReader.h"
 
@@ -13,16 +14,29 @@ int main(int, char**){
     std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
 
-    int amount{10};
-    std::cout << "WAV files first " << amount << " samples: \n";
-    std::vector<float> samples = WAVFile->getSamples(amount);
-    for (auto sample : samples) {
-        std::cout << sample << '\n';
-    }
-
     printWaveformTerminal(WAVFile);
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
-    
+    std::vector<float> samples = WAVFile->getSamples(441);
+
+    int dashedAmount{};
+    int sampleAmount{};
+    int width{30};
+
+    for (auto sample : samples) {
+        sampleAmount = static_cast<int>(sample*(float)width);
+        dashedAmount = abs(sampleAmount);
+        if (sample > 0) {
+            std::print("{:>{}}", std::string(dashedAmount, '-'), width);
+        } else {
+            std::print("{:>{}}", " ", width);
+        }
+        std::print("|");
+        if (sample < 0) {
+            sampleAmount = abs(sampleAmount);
+            std::print("{:<{}}", std::string(dashedAmount, '-'), width);
+        }
+        std::print("\n");
+    }
 }

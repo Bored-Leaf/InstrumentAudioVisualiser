@@ -10,8 +10,7 @@ WAVReader::WAVReader(const std::string& filePath)
                 : m_wav{}
                 , m_sampleRate{}
                 , m_channels{}
-                , m_bitsPerSample{}
-                , audioData{} {
+                , m_bitsPerSample{} {
     if (!drwav_init_file(&m_wav, filePath.c_str(), NULL)) {
         std::string errorMsg{"Error opening WAV file at: "};
         throw std::invalid_argument(errorMsg + filePath);

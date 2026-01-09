@@ -10,7 +10,7 @@ Load the WAV file and print info:
 	- [x] How is a waveform calculated?
 		- Normalising PCM data for each sample.
 - print the waveform in terminal to validate
-	- [ ] print the sample data and also dashes representing a sort of waveform.
+	- [x] print the sample data and also dashes representing a sort of waveform.
 		- Dash waveform looks something like (but more dashes obviously):
 			```
 			---|
