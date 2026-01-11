@@ -28,15 +28,10 @@ Load the WAV file and print info:
 			```
 
 # Draw the waveform
-Research:
-- OpenGL
-	- [ ] **Data Format**: What format does OpenGL expect vertex data in?
-	- [ ] **Buffer Objects**: How do you get your vertex data from CPU memory into GPU memory? (You'll see terms like *VBO*, *VAO*)
-		- [ ] What is *VBO*?
-		- [ ] What is *VAO*?
-	- [ ] **Shaders**: What's the minimum shader code needed to draw lines?
-	- [ ] **Drawing**: What OpenGL function actually triggers the code?
+Research OpenGL
+- [Learn opengl](https://learnopengl.com/)
 
+Implement opengl in project
 - [ ] Render waveform of WAVFile
 
 # Your first FFT
