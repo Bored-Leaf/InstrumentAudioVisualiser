@@ -32,13 +32,13 @@ void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
     int width{30};
 
     for (auto sample : samples) {
-
-        if (abs(sample) > 1.0 || abs(sample) < -1.0) {
+        // PERF: Validate entire entire file or big chunks once before the loop
+        if (abs(sample) > 1.0) {
             std::print("Terminal style waveform only support 0dDBFS");
             return;
         }
 
-        sampleAmount = static_cast<int>(sample*(float)width);
+        sampleAmount = static_cast<int>(sample*static_cast<float>(width));
         dashedAmount = abs(sampleAmount);
         if (sample > 0) {
             std::print("{:>{}}", std::string(dashedAmount, '-'), width);

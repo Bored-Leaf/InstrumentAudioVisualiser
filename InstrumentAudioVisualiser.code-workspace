@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "Clang 21.1.8 Linux",
+			"path": "out/build/Clang 21.1.8 Linux"
+		}
+	],
+	"settings": {}
+}
