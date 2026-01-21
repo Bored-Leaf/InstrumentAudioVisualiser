@@ -1,12 +1,52 @@
 #include <iostream>
 #include <memory>
 #include <print>
+#include <string>
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include "../include/WAVReader.h"
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
+void framebufferSize_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
 
-int main(int, char**){
+int main(){
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    const unsigned int SCR_WIDTH{800};
+    const unsigned int SCR_HEIGHT{600};
+    const char* windowName{"Instrument Audio Visualiser"};
+
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, nullptr, nullptr);
+    if (window == nullptr) {
+        std::print(stderr, "Failed to create GLFW Window");
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::print(stderr, "Failed to initialise GLAD");
+        return -1;
+    }
+
+    while(!glfwWindowShouldClose(window)) {
+        processInput(window);
+
+        std::print("Hello");
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
     std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/sample100hz.wav");
@@ -15,6 +55,16 @@ int main(int, char**){
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
 
     printWaveformTerminal(WAVFile);
+
+    return 0;
+}
+
+void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {

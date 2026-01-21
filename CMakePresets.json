@@ -16,8 +16,8 @@
             }
         }, 
         {
-            "name": "Clang 21.1.8 Linux",
-            "displayName": "Clang 21.1.8 Linux",
+            "name": "Clang_21.1.8_Linux",
+            "displayName": "Clang_21.1.8-Linux",
             "description": "Using compilers for Linux",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/build/${presetName}",

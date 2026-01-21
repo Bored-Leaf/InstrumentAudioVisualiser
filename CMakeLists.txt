@@ -6,7 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-file(GLOB SOURCE_FILES "src/*.cpp")
+find_package(glfw3 3.3 REQUIRED)
+find_package(OpenGL REQUIRED)
+
+file(GLOB SOURCE_FILES "src/*.cpp" "src/*.c")
 
 add_executable(
     InstrumentAudioVisualiser
@@ -18,5 +21,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_options(InstrumentAudioVisualiser PRIVATE -stdlib=libc++ -lc++abi)
 endif()
 
-target_include_directories(InstrumentAudioVisualiser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR/include})
+target_include_directories(InstrumentAudioVisualiser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+target_link_libraries(InstrumentAudioVisualiser glfw OpenGL::GL)
