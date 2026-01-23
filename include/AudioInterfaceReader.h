@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IAudioSource.h"
 
 class AudioInterfaceReader : public IAudioSource {
