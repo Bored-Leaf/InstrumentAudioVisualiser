@@ -40,6 +40,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
     unsigned int fragment{};
     int success{};
     std::string infoLog{};
+    infoLog.resize(512);
 
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, nullptr);
