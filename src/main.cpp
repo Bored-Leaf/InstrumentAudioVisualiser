@@ -6,13 +6,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../include/WAVReader.h"
+#include "WAVReader.h"
+#include "shader.h"
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-int main(){
+int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -36,16 +37,7 @@ int main(){
         return -1;
     }
 
-    while(!glfwWindowShouldClose(window)) {
-        processInput(window);
-
-        std::print("Hello");
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
+    // Move eventually
 
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
@@ -55,6 +47,59 @@ int main(){
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
 
     printWaveformTerminal(WAVFile);
+
+    // Move eventually
+
+    auto triangleShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
+
+    std::vector<float> vertices{
+        -0.5F, -0.5F, 0.0F,   1.0F, 0.0F, 0.0F,
+         0.5F, -0.5F, 0.0F,   0.0F, 1.0F, 0.0F,
+        0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
+    };
+
+    unsigned int VAO{};
+    unsigned int VBO{};
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    int nrAttribes{};
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttribes);
+    std::print("Number nr of vertex attributes supported: {}", nrAttribes);
+
+    while(!glfwWindowShouldClose(window)) {
+        processInput(window);
+
+        glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        triangleShader->use();
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    triangleShader->deleteShader();
+
+    glfwTerminate();
 
     return 0;
 }
