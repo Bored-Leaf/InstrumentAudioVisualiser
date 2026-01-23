@@ -10,18 +10,19 @@
 #include "shader.h"
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
+std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+
+const unsigned int SCR_WIDTH{800};
+const unsigned int SCR_HEIGHT{600};
+const char* windowName{"Instrument Audio Visualiser"};
 
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    const unsigned int SCR_WIDTH{800};
-    const unsigned int SCR_HEIGHT{600};
-    const char* windowName{"Instrument Audio Visualiser"};
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, nullptr, nullptr);
     if (window == nullptr) {
@@ -57,6 +58,12 @@ int main() {
          0.5F, -0.5F, 0.0F,   0.0F, 1.0F, 0.0F,
         0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
     };
+
+    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, 441)};
+
+    for (size_t i = 0; i < waveformVertices.size();i += 3) {
+        std::print("x:{:.7f} y:{:.7f} z:{:.7f}\n", waveformVertices[i], waveformVertices[i+1], waveformVertices[i+2]);
+    }
 
     unsigned int VAO{};
     unsigned int VBO{};
@@ -110,6 +117,26 @@ void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
 
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
+}
+
+std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount) {
+    // TODO: MAKE normalised_X not hardcoded with SCR_WIDTH to it responds to window resizing
+
+    std::vector<float> samples = WAVFile->getSamples(amount);
+
+    std::vector<float> wavVertices{};
+    wavVertices.reserve(samples.size() * 3);
+
+    float screen_x{static_cast<float>(SCR_WIDTH)/441};
+    float current_x{};
+    float normalised_x{};
+    for (size_t i = 0;i < samples.size(); i += 1) {
+        current_x = screen_x * static_cast<float>(i);
+        normalised_x = 2 * (current_x - 0)/(800 - 0)-1;
+        wavVertices.insert(wavVertices.end(), {normalised_x, samples[i], 0});
+    }
+
+    return wavVertices;
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
