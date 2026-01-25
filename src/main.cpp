@@ -2,6 +2,7 @@
 #include <memory>
 #include <print>
 #include <string>
+#include <cmath>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,13 +12,14 @@
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
 std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset);
-void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, float samplesToAdvance);
+void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 const unsigned int SCR_WIDTH{800};
 const unsigned int SCR_HEIGHT{600};
 const char* windowName{"Instrument Audio Visualiser"};
+const int waveformWindow{441 * 1};
 
 int main() {
     glfwInit();
@@ -61,7 +63,7 @@ int main() {
         0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
     };
 
-    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, 441, 50)};
+    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
     unsigned int VAO{};
     unsigned int VBO{};
@@ -70,9 +72,10 @@ int main() {
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
-
+    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
 
@@ -80,8 +83,34 @@ int main() {
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttribes);
     std::println("Number nr of vertex attributes supported: {}", nrAttribes);
 
+    float samplesToAdvance{};
+    float fractionalLoss{};
+    uint32_t sampleRate{WAVFile->getSampleRate()};
+    float dtTime{static_cast<float>(glfwGetTime())};
+    float previousFrame{};
+    float currentFrame{};
     while(!glfwWindowShouldClose(window)) {
+        // Delta time
+        currentFrame = static_cast<float>(glfwGetTime());
+        dtTime = currentFrame - previousFrame;
+        previousFrame = currentFrame;
+        //std::print("delta: {}\n", dtTime);
+
         processInput(window);
+
+        // Update Vertecies
+        samplesToAdvance = sampleRate * dtTime;
+        // Get Fractional part
+        fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
+        // Add Integer if over 1.0
+        updateWavVerticies(WAVFile, VBO, static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss));
+        std::print("sampleRate: {}, dtTime: {}, samplesToAdvance: {}", sampleRate, dtTime, samplesToAdvance);
+
+        //std::print("fractional Loss Before: {}\n", fractionalLoss);
+        if (fractionalLoss > 1.0F) {
+            fractionalLoss -= 1;
+        }
+        //std::print("fractional Loss After: {}\n\n", fractionalLoss);
 
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -89,7 +118,7 @@ int main() {
         triangleShader->use();
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_LINE_STRIP, 0, 441);
+        glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
 
         glBindVertexArray(0);
 
@@ -115,8 +144,6 @@ void processInput(GLFWwindow* window) {
 }
 
 std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
-    // TODO: Decide on better behviour when reaching end of file
-    offset = offset % (132301 - 441);
     // PERF: taking in a reference to a float to reduce allocations each frame
     std::vector<float> samples = WAVFile->getSamples(amount, offset);
 
@@ -135,12 +162,13 @@ std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFil
     return wavVertices;
 }
 
-void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, float samplesToAdvance) {
+void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance) {
     static int offSet{0};
 
     offSet+=samplesToAdvance;
-    std::print("Samples to Advance: {}\n", samplesToAdvance);
-    std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, 441, offSet);
+    offSet = offSet % (132301 - offSet);
+    std::print(", offset: {}\n", offSet);
+    std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, waveformWindow, offSet);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
