@@ -10,7 +10,7 @@
 #include "shader.h"
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
-std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount);
+std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -54,16 +54,13 @@ int main() {
     auto triangleShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
 
     std::vector<float> vertices{
+        // Positions                        // Colours
         -0.5F, -0.5F, 0.0F,   1.0F, 0.0F, 0.0F,
          0.5F, -0.5F, 0.0F,   0.0F, 1.0F, 0.0F,
         0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
     };
 
-    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, 441)};
-
-    for (size_t i = 0; i < waveformVertices.size();i += 3) {
-        std::print("x:{:.7f} y:{:.7f} z:{:.7f}\n", waveformVertices[i], waveformVertices[i+1], waveformVertices[i+2]);
-    }
+    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, 441, 50)};
 
     unsigned int VAO{};
     unsigned int VBO{};
@@ -73,17 +70,14 @@ int main() {
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     int nrAttribes{};
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttribes);
-    std::print("Number nr of vertex attributes supported: {}", nrAttribes);
+    std::println("Number nr of vertex attributes supported: {}", nrAttribes);
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -94,7 +88,7 @@ int main() {
         triangleShader->use();
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_LINE_STRIP, 0, 441);
 
         glBindVertexArray(0);
 
@@ -119,20 +113,20 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
 }
 
-std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount) {
-    // TODO: MAKE normalised_X not hardcoded with SCR_WIDTH to it responds to window resizing
+std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
+    // TODO: Make it a specific aspect ratio for when resizing window
 
     std::vector<float> samples = WAVFile->getSamples(amount);
 
     std::vector<float> wavVertices{};
     wavVertices.reserve(samples.size() * 3);
 
-    float screen_x{static_cast<float>(SCR_WIDTH)/441};
-    float current_x{};
     float normalised_x{};
-    for (size_t i = 0;i < samples.size(); i += 1) {
-        current_x = screen_x * static_cast<float>(i);
-        normalised_x = 2 * (current_x - 0)/(800 - 0)-1;
+    size_t sampleSize{samples.size()};
+    for (size_t i = 0;i < sampleSize; i += 1) {
+        normalised_x = (sampleSize > 1)
+            ? (2.0F * static_cast<float>(i) / (sampleSize - 1)) -1.0F
+            : 0.0F;
         wavVertices.insert(wavVertices.end(), {normalised_x, samples[i], 0});
     }
 
