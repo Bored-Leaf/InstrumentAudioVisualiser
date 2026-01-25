@@ -32,7 +32,8 @@ Research OpenGL
 - [Learn opengl](https://learnopengl.com/)
 
 Implement opengl in project
-- [ ] Render waveform of WAVFile
+- [x] Render waveform of WAVFile only first 441 samples
+- [ ] Make it play the whole wavfile
 
 # Your first FFT
 - [ ] Implement FFT
@@ -59,6 +60,6 @@ Want it to simulate real-time flow
 
 # MIDI Support
 - [ ] reads midi data
-- [ ] Real-time rendering
+- [ ] Real-time auto
 
 # [[Features/Visualisation/Overview|More Visualisations]]
