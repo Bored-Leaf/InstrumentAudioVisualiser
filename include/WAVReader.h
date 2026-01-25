@@ -14,6 +14,7 @@ public:
     uint32_t getSampleRate() const override;
     uint16_t getChannels() const override;
     uint16_t getBitsPerSample() const override;
+    uint32_t getTotalSampleCount() const;
 
     std::vector<float> getSamples(int amount);
     std::vector<float> getSamples(int amount, int offset);

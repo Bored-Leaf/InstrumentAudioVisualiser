@@ -19,7 +19,7 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH{800};
 const unsigned int SCR_HEIGHT{600};
 const char* windowName{"Instrument Audio Visualiser"};
-const int waveformWindow{441 * 1};
+const int waveformWindow{441 * 2};
 
 int main() {
     glfwInit();
@@ -45,7 +45,7 @@ int main() {
 
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
-    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/sample100hz.wav");
+    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
     std::cout << "WAV file sampleRate: " << WAVFile->getSampleRate() << '\n';
     std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
@@ -104,7 +104,7 @@ int main() {
         fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
         // Add Integer if over 1.0
         updateWavVerticies(WAVFile, VBO, static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss));
-        std::print("sampleRate: {}, dtTime: {}, samplesToAdvance: {}", sampleRate, dtTime, samplesToAdvance);
+        std::print("sampleRate: {}, dtTime: {}, samplesToAdvance: {}\n", sampleRate, dtTime, samplesToAdvance);
 
         //std::print("fractional Loss Before: {}\n", fractionalLoss);
         if (fractionalLoss > 1.0F) {
@@ -145,6 +145,7 @@ void processInput(GLFWwindow* window) {
 
 std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
     // PERF: taking in a reference to a float to reduce allocations each frame
+    // TODO: Add boundary checking for end of file samples and pad with 0 when end of sample file
     std::vector<float> samples = WAVFile->getSamples(amount, offset);
 
     std::vector<float> wavVertices{};
@@ -166,8 +167,8 @@ void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int 
     static int offSet{0};
 
     offSet+=samplesToAdvance;
-    offSet = offSet % (132301 - offSet);
-    std::print(", offset: {}\n", offSet);
+    offSet = offSet % WAVFile->getTotalSampleCount();
+    // offSet = 0;
     std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, waveformWindow, offSet);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

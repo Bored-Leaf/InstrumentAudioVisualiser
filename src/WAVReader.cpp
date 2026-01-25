@@ -37,6 +37,10 @@ uint16_t WAVReader::getBitsPerSample() const {
     return m_bitsPerSample;
 }
 
+uint32_t WAVReader::getTotalSampleCount() const {
+    return audioData.size();
+}
+
 std::vector<float> WAVReader::getSamples(int amount) {
     std::vector<float> samples(amount);
 
