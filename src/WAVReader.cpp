@@ -47,6 +47,16 @@ std::vector<float> WAVReader::getSamples(int amount) {
     return samples;
 }
 
+std::vector<float> WAVReader::getSamples(int amount, int offset) {
+    std::vector<float> samples(amount);
+
+    for (int i = 0 + offset; i < amount + offset; ++i) {
+        samples[i - offset] = audioData[i];
+    }
+    
+    return samples;
+}
+
 // ========== Private ==========
 
 void WAVReader::loadPcmData() {

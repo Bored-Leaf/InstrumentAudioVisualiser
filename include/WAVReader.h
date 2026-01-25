@@ -16,6 +16,7 @@ public:
     uint16_t getBitsPerSample() const override;
 
     std::vector<float> getSamples(int amount);
+    std::vector<float> getSamples(int amount, int offset);
 private:
     drwav m_wav;
     uint32_t m_sampleRate;

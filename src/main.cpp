@@ -11,6 +11,7 @@
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
 std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset);
+void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, float samplesToAdvance);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -114,9 +115,10 @@ void processInput(GLFWwindow* window) {
 }
 
 std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
-    // TODO: Make it a specific aspect ratio for when resizing window
-
-    std::vector<float> samples = WAVFile->getSamples(amount);
+    // TODO: Decide on better behviour when reaching end of file
+    offset = offset % (132301 - 441);
+    // PERF: taking in a reference to a float to reduce allocations each frame
+    std::vector<float> samples = WAVFile->getSamples(amount, offset);
 
     std::vector<float> wavVertices{};
     wavVertices.reserve(samples.size() * 3);
@@ -131,6 +133,17 @@ std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFil
     }
 
     return wavVertices;
+}
+
+void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, float samplesToAdvance) {
+    static int offSet{0};
+
+    offSet+=samplesToAdvance;
+    std::print("Samples to Advance: {}\n", samplesToAdvance);
+    std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, 441, offSet);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
