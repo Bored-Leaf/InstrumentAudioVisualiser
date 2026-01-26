@@ -1,8 +1,6 @@
 #include <iostream>
 #include <memory>
 #include <print>
-#include <string>
-#include <cmath>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -15,6 +13,7 @@ GLFWwindow* setupGLFW();
 
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 
 const unsigned int SCR_WIDTH{800};
 const unsigned int SCR_HEIGHT{600};
@@ -29,7 +28,6 @@ int main() {
         std::print("GLFW Window setup unsuccessful\n");
         return -1;
     }
-
     // Move eventually
 
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
@@ -39,7 +37,7 @@ int main() {
     std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
 
-    WaveformUtils::printWaveformTerminal(WAVFile);
+    // WaveformUtils::printWaveformTerminal(WAVFile);
 
     // Move eventually
 
@@ -79,7 +77,7 @@ int main() {
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, playButtonVBO);
     glBufferData(GL_ARRAY_BUFFER, playButtonVerticies.size() * sizeof(float), playButtonVerticies.data(), GL_STATIC_DRAW);
-    
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
 
@@ -93,33 +91,45 @@ int main() {
     float dtTime{static_cast<float>(glfwGetTime())};
     float previousFrame{};
     float currentFrame{};
+
+    bool isPlaying{false};
+    // bool shouldLoop{false};
+    int offset{};
+
     while(!glfwWindowShouldClose(window)) {
+        processInput(window);
+
         // Delta time
         currentFrame = static_cast<float>(glfwGetTime());
         dtTime = currentFrame - previousFrame;
         previousFrame = currentFrame;
-        //std::print("delta: {}\n", dtTime);
 
-        processInput(window);
-
-        // Update Vertecies
-        samplesToAdvance = sampleRate * dtTime;
-        // Get Fractional part
-        fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
-        // Add Integer if over 1.0
-        WaveformUtils::updateWavVerticies(WAVFile, VBO, static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss), waveformWindow);
-
-        if (fractionalLoss > 1.0F) {
-            fractionalLoss -= 1;
+        // UI functionality
+        if (isPlaying) {
+            // Update Vertecies by amount of time passed
+            samplesToAdvance = sampleRate * dtTime;
+            // Get Fractional part
+            fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
+            // Add missed Integral fractionalLoss if any
+            offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
+            // Send vertex data to GPU
+            WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);    
+            
+            // The Integral has been added above so remove
+            if (fractionalLoss > 1.0F) {
+                fractionalLoss -= 1;
+            }
         }
+
+        
 
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        triangleShader->use();
+        waveformShader->use();
 
         glLineWidth(2.0F);
-        glBindVertexArray(VAO);
+        glBindVertexArray(waveformVAO);
         glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
 
         UIShader->use();
@@ -183,4 +193,17 @@ void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
 
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
+}
+
+void mouseButton_callback(GLFWwindow* window,int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos{};
+        double ypos{};
+        glfwGetCursorPos(window, &xpos, &ypos);
+        std::print("x: {}, y: {}\n", xpos, ypos);
+        // Find if clicked on play button then play
+        // Use uniforms for when playing so its red and can't press again
+        // Use uniforms for when mouse is hovering over the button. (Probably have to use a 
+        // seperate callback for when mouse pos moves)
+    }
 }

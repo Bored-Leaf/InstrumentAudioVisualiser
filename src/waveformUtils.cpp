@@ -76,7 +76,6 @@ void WaveformUtils::updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile
 
     offSet+=samplesToAdvance;
     offSet = offSet % WAVFile->getTotalSampleCount();
-    offSet = 0;
     std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, amount, offSet);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
