@@ -8,12 +8,11 @@
 #include <GLFW/glfw3.h>
 
 #include "WAVReader.h"
+#include <waveformUtils.h>
 #include "shader.h"
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
-std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset);
-void fillwavVector(std::vector<float> &wavVectorToFill, std::vector<float> &samples, const size_t sampleSize);
-void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance);
+
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -64,7 +63,7 @@ int main() {
         0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
     };
 
-    std::vector<float> waveformVertices{wavSamplesToVertices(WAVFile, waveformWindow, 0)};
+    std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
     unsigned int VAO{};
     unsigned int VBO{};
@@ -104,7 +103,7 @@ int main() {
         // Get Fractional part
         fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
         // Add Integer if over 1.0
-        updateWavVerticies(WAVFile, VBO, static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss));
+        WaveformUtils::updateWavVerticies(WAVFile, VBO, static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss), waveformWindow);
 
         if (fractionalLoss > 1.0F) {
             fractionalLoss -= 1;
@@ -140,50 +139,6 @@ void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
 
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
-}
-
-std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
-    // PERF: taking in a reference to a float to reduce allocations each frame
-    // TODO: Add boundary checking for end of file samples and pad with 0 when end of sample file
-    std::vector<float> samples = WAVFile->getSamples(amount, offset);
-    std::vector<float> wavVertices{};
-
-    if (WAVFile->getTotalSampleCount() < waveformWindow) {
-        wavVertices.reserve(amount * 3);
-        fillwavVector(wavVertices, samples, amount);
-    } else {
-        wavVertices.reserve(samples.size() * 3);
-        fillwavVector(wavVertices, samples, amount);
-    }
-
-    return wavVertices;
-}
-
-void fillwavVector(std::vector<float> &wavVectorToFill, std::vector<float> &samples, const size_t totalAmount) {
-    float normalised_x{};
-    for (size_t i = 0;i < totalAmount;i++) {
-        normalised_x = (totalAmount > 1)
-            ? (2.0F * static_cast<float>(i) / (totalAmount - 1)) -1.0F
-            : 0.0F;
-        
-        if (i < samples.size()) {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, samples[i], 0});
-        } else {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, 0.0F, 0});
-        }
-        }
-}
-
-void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance) {
-    static int offSet{0};
-
-    offSet+=samplesToAdvance;
-    offSet = offSet % WAVFile->getTotalSampleCount();
-    offSet = 0;
-    std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, waveformWindow, offSet);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
 }
 
 void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
