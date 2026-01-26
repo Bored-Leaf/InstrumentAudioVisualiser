@@ -33,11 +33,15 @@ Research OpenGL
 
 Implement opengl in project
 - [x] Render waveform of WAVFile only first 441 samples
-- [ ] Make it play the whole wavfile
+- [x] Make it play the whole wavfile
+- [ ] Have a play button that plays the waveform once instead of looping the whole time
+	- [ ] A looping toggle?
+- [ ] Have a button to toggle to loop the playback through the waveformWindow
 
 # Your first FFT
 - [ ] Implement FFT
-	- [ ] Just print the values
+	- [ ] Just print the values for now
+	- [ ] OpenGL: Have top half for waveform and bottom half for FFT
 
 # Implement multi threaded/real-time FFT
 - Main thread - representing FFT (printing values for now) and waveform (rendering).
@@ -57,6 +61,9 @@ Want it to simulate real-time flow
 - [ ] 
  
 # Real-time audio
+Add option when opening application if file or live instrument
+- [ ] if file then select 
+- [ ] if live instrument then yeah...
 
 # MIDI Support
 - [ ] reads midi data
