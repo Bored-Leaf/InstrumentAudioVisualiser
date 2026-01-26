@@ -2,6 +2,43 @@
 
 #include <glad/glad.h>
 
+void WaveformUtils::printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
+    // FEATURE: Add support for stereo and non 0DBFS.
+
+    if (WAVFile->getChannels() > 1) {
+        std::print("Terminal style waveform supports 1 channel\n");
+        return;
+    }
+
+    std::vector<float> samples = WAVFile->getSamples(441);
+
+    int dashedAmount{};
+    int sampleAmount{};
+    int width{30};
+
+    for (auto sample : samples) {
+        // PERF: Validate entire entire file or big chunks once before the loop
+        if (abs(sample) > 1.0) {
+            std::print("Terminal style waveform only support 0dDBFS");
+            return;
+        }
+
+        sampleAmount = static_cast<int>(sample*static_cast<float>(width));
+        dashedAmount = abs(sampleAmount);
+        if (sample > 0) {
+            std::print("{:>{}}", std::string(dashedAmount, '-'), width);
+        } else {
+            std::print("{:>{}}", " ", width);
+        }
+        std::print("|");
+        if (sample < 0) {
+            sampleAmount = abs(sampleAmount);
+            std::print("{:<{}}", std::string(dashedAmount, '-'), width);
+        }
+        std::print("\n");
+    }
+}
+
 std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
     // PERF: taking in a reference to a float to reduce allocations each frame
     // TODO: Add boundary checking for end of file samples and pad with 0 when end of sample file

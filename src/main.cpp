@@ -50,7 +50,7 @@ int main() {
     std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
     std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
 
-    printWaveformTerminal(WAVFile);
+    WaveformUtils::printWaveformTerminal(WAVFile);
 
     // Move eventually
 
@@ -139,41 +139,4 @@ void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
 
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
-}
-
-void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
-    // FEATURE: Add support for stereo and non 0DBFS.
-
-    if (WAVFile->getChannels() > 1) {
-        std::print("Terminal style waveform supports 1 channel\n");
-        return;
-    }
-
-    std::vector<float> samples = WAVFile->getSamples(441);
-
-    int dashedAmount{};
-    int sampleAmount{};
-    int width{30};
-
-    for (auto sample : samples) {
-        // PERF: Validate entire entire file or big chunks once before the loop
-        if (abs(sample) > 1.0) {
-            std::print("Terminal style waveform only support 0dDBFS");
-            return;
-        }
-
-        sampleAmount = static_cast<int>(sample*static_cast<float>(width));
-        dashedAmount = abs(sampleAmount);
-        if (sample > 0) {
-            std::print("{:>{}}", std::string(dashedAmount, '-'), width);
-        } else {
-            std::print("{:>{}}", " ", width);
-        }
-        std::print("|");
-        if (sample < 0) {
-            sampleAmount = abs(sampleAmount);
-            std::print("{:<{}}", std::string(dashedAmount, '-'), width);
-        }
-        std::print("\n");
-    }
 }
