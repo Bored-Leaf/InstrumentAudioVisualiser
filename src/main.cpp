@@ -11,7 +11,7 @@
 #include <waveformUtils.h>
 #include "shader.h"
 
-void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
+GLFWwindow* setupGLFW();
 
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -22,22 +22,11 @@ const char* windowName{"Instrument Audio Visualiser"};
 const int waveformWindow{441 * 50};
 
 int main() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, nullptr, nullptr);
-    if (window == nullptr) {
-        std::print(stderr, "Failed to create GLFW Window");
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::print(stderr, "Failed to initialise GLAD");
+    GLFWwindow* window{setupGLFW()};
+    if (window) {
+        std::print("GLFW Window setup successful\n");
+    } else {
+        std::print("GLFW Window setup unsuccessful\n");
         return -1;
     }
 
@@ -131,6 +120,35 @@ int main() {
     glfwTerminate();
 
     return 0;
+}
+
+GLFWwindow* setupGLFW() {
+    glfwSetErrorCallback([](int error, const char* description) {
+        std::print(stderr, "GLFW Error ({}): {}\n", error, description);
+    });
+
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, nullptr, nullptr);
+    if (window == nullptr) {
+        std::print(stderr, "Failed to create GLFW Window");
+        glfwTerminate();
+        return nullptr;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
+    glfwSetMouseButtonCallback(window, mouseButton_callback);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::print(stderr, "Failed to initialise GLAD");
+        glfwTerminate();
+        return nullptr;
+    }
+
+    return window;
 }
 
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
