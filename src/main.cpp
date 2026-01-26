@@ -43,27 +43,42 @@ int main() {
 
     // Move eventually
 
-    auto triangleShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
+    auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
+    auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
-    std::vector<float> vertices{
-        // Positions                        // Colours
-        -0.5F, -0.5F, 0.0F,   1.0F, 0.0F, 0.0F,
-         0.5F, -0.5F, 0.0F,   0.0F, 1.0F, 0.0F,
-        0.0F, 0.5F, 0.0F,   0.0F, 0.0F, 1.0F
+    std::vector<float> playButtonVerticies{
+        0.9F, 0.9F, 0.0F,
+        0.7F, 0.9F, 0.0F,
+        0.9F, 0.7, 0.0F,
+
+        0.7F, 0.9F, 0.0F,
+        0.7F, 0.7F, 0.0F,
+        0.9F, 0.7F, 0.0F
     };
 
     std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
-    unsigned int VAO{};
-    unsigned int VBO{};
+    unsigned int waveformVAO{};
+    unsigned int UIVAO{};
+    unsigned int waveformVBO{};
+    unsigned int playButtonVBO{};
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &waveformVAO);
+    glGenVertexArrays(1, &UIVAO);
+    glGenBuffers(1, &waveformVBO);
+    glGenBuffers(1, &playButtonVBO);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(waveformVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
     glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(UIVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, playButtonVBO);
+    glBufferData(GL_ARRAY_BUFFER, playButtonVerticies.size() * sizeof(float), playButtonVerticies.data(), GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
@@ -107,15 +122,26 @@ int main() {
         glBindVertexArray(VAO);
         glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
 
+        UIShader->use();
+
+        glBindVertexArray(UIVAO);
+        glDrawArrays(GL_TRIANGLES, 0, playButtonVerticies.size());
+
         glBindVertexArray(0);
+
+        GLenum err{};
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            std::print(stderr , "OpenGL Error >> {}\n", err);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    triangleShader->deleteShader();
+    glDeleteVertexArrays(1, &waveformVAO);
+    glDeleteBuffers(1, &waveformVBO);
+    waveformShader->deleteShader();
+    UIShader->deleteShader();
 
     glfwTerminate();
 
