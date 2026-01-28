@@ -42,10 +42,13 @@ uint32_t WAVReader::getTotalSampleCount() const {
 }
 
 std::vector<float> WAVReader::getSamples(int amount) {
-    // TODO: Add boundary checking for end of file samples and pad with 0s
     std::vector<float> samples(amount);
 
-    for (int i = 0; i < amount; ++i) {
+    if (samples.size() > getTotalSampleCount()) {
+        samples.resize(getTotalSampleCount());
+    }
+
+    for (size_t i = 0; i < samples.size(); ++i) {
         samples[i] = audioData[i];
     }
     
@@ -59,8 +62,8 @@ std::vector<float> WAVReader::getSamplesOffset(int amount, int offset) {
         samples.resize(getTotalSampleCount() - offset);
     }
 
-    for (int i = 0 + offset; i < amount + offset; ++i) {
-        samples[i - offset] = audioData[i];
+    for (size_t i = 0; i < samples.size(); ++i) {
+        samples[i] = audioData[i + offset];
     }
     
     return samples;
