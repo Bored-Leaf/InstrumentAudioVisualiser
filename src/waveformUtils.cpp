@@ -41,8 +41,7 @@ void WaveformUtils::printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVF
 
 std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
     // PERF: taking in a reference to a float to reduce allocations each frame
-    // TODO: Add boundary checking for end of file samples and pad with 0 when end of sample file
-    std::vector<float> samples = WAVFile->getSamples(amount, offset);
+    std::vector<float> samples = WAVFile->getSamplesOffset(amount, offset);
     std::vector<float> wavVertices{};
 
     if (WAVFile->getTotalSampleCount() < amount) {

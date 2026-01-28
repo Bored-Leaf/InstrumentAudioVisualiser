@@ -52,7 +52,7 @@ std::vector<float> WAVReader::getSamples(int amount) {
     return samples;
 }
 
-std::vector<float> WAVReader::getSamples(int amount, int offset) {
+std::vector<float> WAVReader::getSamplesOffset(int amount, int offset) {
     std::vector<float> samples(amount);
 
     if (amount + offset > getTotalSampleCount()) {
