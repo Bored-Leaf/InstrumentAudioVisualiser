@@ -34,9 +34,11 @@ Research OpenGL
 Implement opengl in project
 - [x] Render waveform of WAVFile only first 441 samples
 - [x] Make it play the whole wavfile
-- [ ] Have a play button that plays the waveform once instead of looping the whole time
-	- [ ] A looping toggle?
-- [ ] Have a button to toggle to loop the playback through the waveformWindow
+- [x] Have a play button that plays the waveform once instead of looping the whole time
+	- [x] A looping toggle?
+- [x] Have a button to toggle to loop the playback through the waveformWindow
+- [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
+- [ ] Refactor to be cleaner and clearer as too many non-const globals.
 
 # Your first FFT
 - [ ] Implement FFT
