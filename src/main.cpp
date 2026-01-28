@@ -134,15 +134,15 @@ int main() {
         currentFrame = static_cast<float>(glfwGetTime());
         dtTime = currentFrame - previousFrame;
         previousFrame = currentFrame;
-
+        
         // UI functionality
-        if (isPlaying) {
-            if (totalOffset > WAVFile->getTotalSampleCount()) {
-                if (!shouldLoop) {
-                    isPlaying = false;
-                    totalOffset = 0;
-                }
+        if (totalOffset > WAVFile->getTotalSampleCount()) {
+            if (!shouldLoop) {
+                isPlaying = false;
             }
+            totalOffset = 0;
+        }
+        if (isPlaying) {
             // Update Vertecies by amount of time passed
             samplesToAdvance = sampleRate * dtTime;
             // Get Fractional part
@@ -151,14 +151,12 @@ int main() {
             offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
             totalOffset += offset;
             // Send vertex data to GPU
-            WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);    
+            WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);
             
             // The Integral has been added above so remove
             if (fractionalLoss > 1.0F) {
                 fractionalLoss -= 1;
             }
-
-            
         }
 
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
@@ -174,7 +172,6 @@ int main() {
 
         glBindVertexArray(UIVAO);
         glDrawArrays(GL_TRIANGLES, 0, playButtonVerticies.size() / 3);
-        // glDrawArrays(GL_TRIANGLES, 18, playButtonVerticies.size() / 3);
 
         glBindVertexArray(0);
 
