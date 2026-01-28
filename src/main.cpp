@@ -18,7 +18,20 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 const unsigned int SCR_WIDTH{800};
 const unsigned int SCR_HEIGHT{600};
 const char* windowName{"Instrument Audio Visualiser"};
-const int waveformWindow{441 * 50};
+const int waveformWindow{441 * 30};
+
+bool isPlaying{false}; 
+bool shouldLoop{false};
+
+float playbuttonLeftX{};
+float playbuttonRightX{};
+float playbuttonBottomY{};
+float playbuttonTopY{};
+
+float loopbuttonLeftX{};
+float loopbuttonRightX{};
+float loopbuttonBottomY{};
+float loopbuttonTopY{};
 
 int main() {
     GLFWwindow* window{setupGLFW()};
@@ -45,14 +58,30 @@ int main() {
     auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> playButtonVerticies{
-        0.9F, 0.9F, 0.0F,
-        0.7F, 0.9F, 0.0F,
-        0.9F, 0.7, 0.0F,
+        0.9F, 0.9F, 0.0F,       // Top Right
+        0.7F, 0.9F, 0.0F,       // Top Left
+        0.9F, 0.7, 0.0F,        //Bottom Right
 
-        0.7F, 0.9F, 0.0F,
-        0.7F, 0.7F, 0.0F,
-        0.9F, 0.7F, 0.0F
+        0.7F, 0.9F, 0.0F,     // Top Left
+        0.7F, 0.7F, 0.0F,    // Bottom Left
+        0.9F, 0.7F, 0.0F,    // Bottom Right
+
+        0.9F, 0.6F, 0.0F,       // Top Right
+        0.7F, 0.6F, 0.0F,       // Top Left
+        0.9F, 0.4F, 0.0F,       // Bottom RIght
+
+        0.7F, 0.6F, 0.0F,       // Top Left
+        0.7F, 0.4F, 0.0F,       // Bottom Left
+        0.9F, 0.4F, 0.0F        // Bottom Right
     };
+    playbuttonLeftX = (0.7F + 1.0F) / 2.0F * SCR_WIDTH;
+    playbuttonRightX = (0.9F + 1.0F) / 2.0F * SCR_WIDTH;
+    playbuttonTopY = (1.0F - (0.9F + 1.0F) / 2) * SCR_HEIGHT;
+    playbuttonBottomY = ( 1.0F - (0.7F + 1.0F) / 2) * SCR_HEIGHT;
+    loopbuttonLeftX = (0.7F + 1.0F) / 2.0F * SCR_WIDTH;
+    loopbuttonRightX = (0.9F + 1.0F) / 2.0F * SCR_WIDTH;
+    loopbuttonTopY = (1.0F - (0.6F + 1.0F) / 2) * SCR_HEIGHT;
+    loopbuttonBottomY = ( 1.0F - (0.4F + 1.0F) / 2) * SCR_HEIGHT;
 
     std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
@@ -60,6 +89,7 @@ int main() {
     unsigned int UIVAO{};
     unsigned int waveformVBO{};
     unsigned int playButtonVBO{};
+    unsigned int loopButtonVBO{};
 
     glGenVertexArrays(1, &waveformVAO);
     glGenVertexArrays(1, &UIVAO);
@@ -92,9 +122,10 @@ int main() {
     float previousFrame{};
     float currentFrame{};
 
-    bool isPlaying{false};
+    // bool isPlaying{false};
     // bool shouldLoop{false};
     int offset{};
+    int totalOffset{};
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -106,12 +137,19 @@ int main() {
 
         // UI functionality
         if (isPlaying) {
+            if (totalOffset > WAVFile->getTotalSampleCount()) {
+                if (!shouldLoop) {
+                    isPlaying = false;
+                    totalOffset = 0;
+                }
+            }
             // Update Vertecies by amount of time passed
             samplesToAdvance = sampleRate * dtTime;
             // Get Fractional part
             fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
             // Add missed Integral fractionalLoss if any
             offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
+            totalOffset += offset;
             // Send vertex data to GPU
             WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);    
             
@@ -119,9 +157,9 @@ int main() {
             if (fractionalLoss > 1.0F) {
                 fractionalLoss -= 1;
             }
-        }
 
-        
+            
+        }
 
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -135,7 +173,8 @@ int main() {
         UIShader->use();
 
         glBindVertexArray(UIVAO);
-        glDrawArrays(GL_TRIANGLES, 0, playButtonVerticies.size());
+        glDrawArrays(GL_TRIANGLES, 0, playButtonVerticies.size() / 3);
+        // glDrawArrays(GL_TRIANGLES, 18, playButtonVerticies.size() / 3);
 
         glBindVertexArray(0);
 
@@ -200,8 +239,14 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods) {
         double xpos{};
         double ypos{};
         glfwGetCursorPos(window, &xpos, &ypos);
-        std::print("x: {}, y: {}\n", xpos, ypos);
-        // Find if clicked on play button then play
+        if (xpos > playbuttonLeftX && xpos < playbuttonRightX &&
+            ypos > playbuttonTopY && ypos < playbuttonBottomY) {
+                isPlaying = true;
+            }
+        if (xpos > loopbuttonLeftX && xpos < loopbuttonRightX &&
+            ypos > loopbuttonTopY && ypos < loopbuttonBottomY) {
+                shouldLoop = !shouldLoop;
+            }
         // Use uniforms for when playing so its red and can't press again
         // Use uniforms for when mouse is hovering over the button. (Probably have to use a 
         // seperate callback for when mouse pos moves)
