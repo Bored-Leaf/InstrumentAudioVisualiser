@@ -57,7 +57,8 @@ int main() {
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
-    std::vector<float> playButtonVerticies{
+    std::vector<float> uiButtonsVerticies{
+        // Play Button
         0.9F, 0.9F, 0.0F,       // Top Right
         0.7F, 0.9F, 0.0F,       // Top Left
         0.9F, 0.7, 0.0F,        //Bottom Right
@@ -66,6 +67,7 @@ int main() {
         0.7F, 0.7F, 0.0F,    // Bottom Left
         0.9F, 0.7F, 0.0F,    // Bottom Right
 
+        // Loop Button
         0.9F, 0.6F, 0.0F,       // Top Right
         0.7F, 0.6F, 0.0F,       // Top Left
         0.9F, 0.4F, 0.0F,       // Bottom RIght
@@ -88,25 +90,24 @@ int main() {
     unsigned int waveformVAO{};
     unsigned int UIVAO{};
     unsigned int waveformVBO{};
-    unsigned int playButtonVBO{};
-    unsigned int loopButtonVBO{};
+    unsigned int uiButtonsVBO{};
 
     glGenVertexArrays(1, &waveformVAO);
     glGenVertexArrays(1, &UIVAO);
     glGenBuffers(1, &waveformVBO);
-    glGenBuffers(1, &playButtonVBO);
+    glGenBuffers(1, &uiButtonsVBO);
 
     glBindVertexArray(waveformVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
-    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_DYNAMIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(UIVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, playButtonVBO);
-    glBufferData(GL_ARRAY_BUFFER, playButtonVerticies.size() * sizeof(float), playButtonVerticies.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
+    glBufferData(GL_ARRAY_BUFFER, uiButtonsVerticies.size() * sizeof(float), uiButtonsVerticies.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
@@ -171,7 +172,7 @@ int main() {
         UIShader->use();
 
         glBindVertexArray(UIVAO);
-        glDrawArrays(GL_TRIANGLES, 0, playButtonVerticies.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, uiButtonsVerticies.size() / 3);
 
         glBindVertexArray(0);
 
