@@ -4,19 +4,21 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "glm/gtc/matrix_transform.hpp"
 
 #include "WAVReader.h"
 #include <waveformUtils.h>
 #include "shader.h"
 
 GLFWwindow* setupGLFW();
+void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
 
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 
-const unsigned int SCR_WIDTH{800};
-const unsigned int SCR_HEIGHT{600};
+const float SCR_WIDTH{800.0F};
+const float SCR_HEIGHT{600.0F};
 const char* windowName{"Instrument Audio Visualiser"};
 const int waveformWindow{441 * 30};
 
@@ -41,49 +43,44 @@ int main() {
         std::print("GLFW Window setup unsuccessful\n");
         return -1;
     }
-    // Move eventually
 
     std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
     std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
-    std::cout << "WAV file sampleRate: " << WAVFile->getSampleRate() << '\n';
-    std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
-    std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
-
-    // WaveformUtils::printWaveformTerminal(WAVFile);
-
-    // Move eventually
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
-        0.9F, 0.9F, 0.0F,       // Top Right
-        0.7F, 0.9F, 0.0F,       // Top Left
-        0.9F, 0.7, 0.0F,        //Bottom Right
+        760, 30, 0.0F,
+        680, 30, 0.0F,
+        760, 90, 0.0F,
 
-        0.7F, 0.9F, 0.0F,     // Top Left
-        0.7F, 0.7F, 0.0F,    // Bottom Left
-        0.9F, 0.7F, 0.0F,    // Bottom Right
+        680, 30, 0.0F,
+        680, 90, 0.0F,
+        760, 90, 0.0F,
 
         // Loop Button
-        0.9F, 0.6F, 0.0F,       // Top Right
-        0.7F, 0.6F, 0.0F,       // Top Left
-        0.9F, 0.4F, 0.0F,       // Bottom RIght
+        760, 120, 0.0F,
+        680, 120, 0.0F,
+        760, 180, 0.0F,
 
-        0.7F, 0.6F, 0.0F,       // Top Left
-        0.7F, 0.4F, 0.0F,       // Bottom Left
-        0.9F, 0.4F, 0.0F        // Bottom Right
+        680, 120, 0.0F,
+        680, 180, 0.0F,
+        760, 180, 0.0F
     };
-    playbuttonLeftX = (0.7F + 1.0F) / 2.0F * SCR_WIDTH;
-    playbuttonRightX = (0.9F + 1.0F) / 2.0F * SCR_WIDTH;
-    playbuttonTopY = (1.0F - (0.9F + 1.0F) / 2) * SCR_HEIGHT;
-    playbuttonBottomY = ( 1.0F - (0.7F + 1.0F) / 2) * SCR_HEIGHT;
-    loopbuttonLeftX = (0.7F + 1.0F) / 2.0F * SCR_WIDTH;
-    loopbuttonRightX = (0.9F + 1.0F) / 2.0F * SCR_WIDTH;
-    loopbuttonTopY = (1.0F - (0.6F + 1.0F) / 2) * SCR_HEIGHT;
-    loopbuttonBottomY = ( 1.0F - (0.4F + 1.0F) / 2) * SCR_HEIGHT;
+    // Play
+    playbuttonLeftX   = 680;
+    playbuttonRightX  = 760;
+    playbuttonTopY    = 30;
+    playbuttonBottomY = 90;
+
+    // Loop
+    loopbuttonLeftX   = 680;
+    loopbuttonRightX  = 760;
+    loopbuttonTopY    = 120;
+    loopbuttonBottomY = 180;
 
     std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
@@ -123,10 +120,11 @@ int main() {
     float previousFrame{};
     float currentFrame{};
 
-    // bool isPlaying{false};
-    // bool shouldLoop{false};
     int offset{};
     int totalOffset{};
+
+    glm::mat4 projection = glm::mat4(1.0F);
+    projection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -170,6 +168,7 @@ int main() {
         glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
 
         UIShader->use();
+        UIShader->setMat4("projection", projection);
 
         glBindVertexArray(UIVAO);
         glDrawArrays(GL_TRIANGLES, 0, uiButtonsVerticies.size() / 3);
@@ -222,6 +221,13 @@ GLFWwindow* setupGLFW() {
     }
 
     return window;
+}
+
+void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile) {
+    std::cout << "WAV file sampleRate: " << WAVFile->getSampleRate() << '\n';
+    std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
+    std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
+    WaveformUtils::printWaveformTerminal(WAVFile);
 }
 
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {

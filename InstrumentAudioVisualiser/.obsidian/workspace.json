@@ -19,7 +19,29 @@
               },
               "icon": "lucide-file",
               "title": "Progression"
-            }
+            },
+            "group": "e088c47fc61e2b1b"
+          }
+        ]
+      },
+      {
+        "id": "4584676c48dba560",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "19e81fbaca712860",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Progression.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Progression"
+            },
+            "group": "e088c47fc61e2b1b"
           }
         ]
       }
@@ -153,7 +175,7 @@
       "card-board:CardBoard": false
     }
   },
-  "active": "4cfbacc2a9a997c1",
+  "active": "19e81fbaca712860",
   "lastOpenFiles": [
     "Welcome.md",
     "Progression.md",

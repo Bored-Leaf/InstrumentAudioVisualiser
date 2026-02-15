@@ -37,7 +37,6 @@ Implement opengl in project
 - [x] Have a play button that plays the waveform once instead of looping the whole time
 	- [x] A looping toggle?
 - [x] Have a button to toggle to loop the playback through the waveformWindow
-- [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
 - [ ] add uniforms to change button colours when pressed or toggled
 - [ ] Refactor to be cleaner and clearer as too many non-const globals.
 
@@ -56,9 +55,13 @@ Want it to simulate real-time flow
 # Rendering waveform *and* FFT with main thread
 - [ ] Render the FFT with main thread
 
-# Optimise
+# Optimise and Polish
+Optimisation:
 - [ ] Use Circular buffer for waveformVerticies? (Need a circular buffer for real-time implementation as well so good for practice)
 	- This way I only need to add the new vertices and get rid of old ones instead of rewriting the whole vector every frame.
+
+Polishing:
+- [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
 
 # FFT Bars
 - [ ] 
