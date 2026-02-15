@@ -35,6 +35,10 @@ float loopbuttonRightX{};
 float loopbuttonBottomY{};
 float loopbuttonTopY{};
 
+glm::mat4 projection = glm::mat4(1.0F);
+
+std::unique_ptr<Shader> UIShader;
+
 int main() {
     GLFWwindow* window{setupGLFW()};
     if (window) {
@@ -49,7 +53,8 @@ int main() {
     std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
-    auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
+    // auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
+    UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
@@ -120,10 +125,11 @@ int main() {
     float previousFrame{};
     float currentFrame{};
 
+    bool currentButtonIsPlay{};
+
     int offset{};
     int totalOffset{};
 
-    glm::mat4 projection = glm::mat4(1.0F);
     projection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
     while(!glfwWindowShouldClose(window)) {
@@ -171,7 +177,13 @@ int main() {
         UIShader->setMat4("projection", projection);
 
         glBindVertexArray(UIVAO);
-        glDrawArrays(GL_TRIANGLES, 0, uiButtonsVerticies.size() / 3);
+        UIShader->setBool("playing", isPlaying);
+        UIShader->setBool("currentButtonPlay", true);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        UIShader->setBool("playing", false);
+        UIShader->setBool("looping", shouldLoop);
+        UIShader->setBool("currentButtonPlay", false);
+        glDrawArrays(GL_TRIANGLES, 6, 6);
 
         glBindVertexArray(0);
 
@@ -232,6 +244,8 @@ void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile) {
 
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
     glViewport(0, 0, width, height);
+
+    projection = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 }
 
 void processInput(GLFWwindow* window) {
@@ -243,10 +257,12 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods) {
         double xpos{};
         double ypos{};
         glfwGetCursorPos(window, &xpos, &ypos);
+        // playButton pressed
         if (xpos > playbuttonLeftX && xpos < playbuttonRightX &&
             ypos > playbuttonTopY && ypos < playbuttonBottomY) {
                 isPlaying = true;
             }
+        // loopButton pressed
         if (xpos > loopbuttonLeftX && xpos < loopbuttonRightX &&
             ypos > loopbuttonTopY && ypos < loopbuttonBottomY) {
                 shouldLoop = !shouldLoop;
