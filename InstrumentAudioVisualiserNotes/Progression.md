@@ -37,10 +37,11 @@ Implement opengl in project
 - [x] Have a play button that plays the waveform once instead of looping the whole time
 	- [x] A looping toggle?
 - [x] Have a button to toggle to loop the playback through the waveformWindow
-- [ ] add uniforms to change button colours when pressed or toggled
 - [ ] Refactor to be cleaner and clearer as too many non-const globals.
 
 # Play the audio file
+- [ ] Play the actual audio from the file
+- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
 
 # Your first FFT
 - [ ] Implement FFT
@@ -62,6 +63,7 @@ Optimisation:
 
 Polishing:
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
+- [ ] Better button icons and effect when hovering mouse over
 
 # FFT Bars
 - [ ] 
