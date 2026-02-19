@@ -16,10 +16,10 @@ void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 
-const float SCR_WIDTH{800.0F};
-const float SCR_HEIGHT{600.0F};
-const char* windowName{"Instrument Audio Visualiser"};
-const int waveformWindow{441 * 30};
+constexpr float SCR_WIDTH{800.0F};
+constexpr float SCR_HEIGHT{600.0F};
+constexpr const char* windowName{"Instrument Audio Visualiser"};
+constexpr int waveformWindow{441 * 30};
 
 struct Button {
     float leftX{};
@@ -31,13 +31,13 @@ struct Button {
 };
 
 struct appState {
-bool isPlaying{false}; 
-bool shouldLoop{false};
+    bool isPlaying{false};
+    bool shouldLoop{false};
 
     Button playButton;
     Button loopButton;
     glm::mat4 uiProjection{1.0F};
-std::unique_ptr<Shader> UIShader;
+    std::unique_ptr<Shader> UIShader;
 };
 
 appState appState;
@@ -98,14 +98,14 @@ int main() {
     glBindVertexArray(waveformVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
-    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(waveformVertices.size() * sizeof(float)), waveformVertices.data(), GL_DYNAMIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
-    glBufferData(GL_ARRAY_BUFFER, uiButtonsVerticies.size() * sizeof(float), uiButtonsVerticies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(uiButtonsVerticies.size() * sizeof(float)), uiButtonsVerticies.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
@@ -122,7 +122,7 @@ int main() {
     float currentFrame{};
 
     int offset{};
-    int totalOffset{};
+    uint totalOffset{};
 
     appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
@@ -220,7 +220,8 @@ GLFWwindow* setupGLFW() {
     glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
     glfwSetMouseButtonCallback(window, mouseButton_callback);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
         std::print(stderr, "Failed to initialise GLAD");
         glfwTerminate();
         return nullptr;
@@ -246,7 +247,8 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
 }
 
-void mouseButton_callback(GLFWwindow* window,int button, int action, int mods) {
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*/) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos{};
         double ypos{};
