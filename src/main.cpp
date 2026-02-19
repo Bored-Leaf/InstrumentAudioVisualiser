@@ -22,21 +22,22 @@ const float SCR_HEIGHT{600.0F};
 const char* windowName{"Instrument Audio Visualiser"};
 const int waveformWindow{441 * 30};
 
+struct Button {
+    float leftX{};
+    float rightX{};
+    float topY{};
+    float bottomY{};
+
+    bool isactive{};
+};
+
+struct appState {
 bool isPlaying{false}; 
 bool shouldLoop{false};
 
-float playbuttonLeftX{};
-float playbuttonRightX{};
-float playbuttonBottomY{};
-float playbuttonTopY{};
-
-float loopbuttonLeftX{};
-float loopbuttonRightX{};
-float loopbuttonBottomY{};
-float loopbuttonTopY{};
-
-glm::mat4 projection = glm::mat4(1.0F);
-
+    Button playButton;
+    Button loopButton;
+    glm::mat4 uiProjection{1.0F};
 std::unique_ptr<Shader> UIShader;
 
 int main() {
@@ -54,7 +55,7 @@ int main() {
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     // auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
-    UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
+    appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
@@ -75,17 +76,12 @@ int main() {
         680, 180, 0.0F,
         760, 180, 0.0F
     };
-    // Play
-    playbuttonLeftX   = 680;
-    playbuttonRightX  = 760;
-    playbuttonTopY    = 30;
-    playbuttonBottomY = 90;
 
-    // Loop
-    loopbuttonLeftX   = 680;
-    loopbuttonRightX  = 760;
-    loopbuttonTopY    = 120;
-    loopbuttonBottomY = 180;
+    // Play button
+    appState.playButton = {.leftX=680, .rightX=760, .topY=30, .bottomY=90, .isactive=false};
+
+    // Loop button
+    appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
     std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
 
@@ -130,7 +126,7 @@ int main() {
     int offset{};
     int totalOffset{};
 
-    projection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
+    appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -142,12 +138,12 @@ int main() {
         
         // UI functionality
         if (totalOffset > WAVFile->getTotalSampleCount()) {
-            if (!shouldLoop) {
-                isPlaying = false;
+            if (!appState.shouldLoop) {
+                appState.isPlaying = false;
             }
             totalOffset = 0;
         }
-        if (isPlaying) {
+        if (appState.isPlaying) {
             // Update Vertecies by amount of time passed
             samplesToAdvance = sampleRate * dtTime;
             // Get Fractional part
@@ -173,16 +169,16 @@ int main() {
         glBindVertexArray(waveformVAO);
         glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
 
-        UIShader->use();
-        UIShader->setMat4("projection", projection);
+        appState.UIShader->use();
+        appState.UIShader->setMat4("projection", appState.uiProjection);
 
         glBindVertexArray(UIVAO);
-        UIShader->setBool("playing", isPlaying);
-        UIShader->setBool("currentButtonPlay", true);
+        appState.UIShader->setBool("playing", appState.isPlaying);
+        appState.UIShader->setBool("currentButtonPlay", true);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        UIShader->setBool("playing", false);
-        UIShader->setBool("looping", shouldLoop);
-        UIShader->setBool("currentButtonPlay", false);
+        appState.UIShader->setBool("playing", false);
+        appState.UIShader->setBool("looping", appState.shouldLoop);
+        appState.UIShader->setBool("currentButtonPlay", false);
         glDrawArrays(GL_TRIANGLES, 6, 6);
 
         glBindVertexArray(0);
@@ -199,7 +195,7 @@ int main() {
     glDeleteVertexArrays(1, &waveformVAO);
     glDeleteBuffers(1, &waveformVBO);
     waveformShader->deleteShader();
-    UIShader->deleteShader();
+    appState.UIShader->deleteShader();
 
     glfwTerminate();
 
@@ -245,7 +241,7 @@ void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile) {
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
     glViewport(0, 0, width, height);
 
-    projection = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
+    appState.uiProjection = glm::ortho(0.0F, (float)width, (float)height, 0.0F);
 }
 
 void processInput(GLFWwindow* window) {
@@ -258,14 +254,14 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods) {
         double ypos{};
         glfwGetCursorPos(window, &xpos, &ypos);
         // playButton pressed
-        if (xpos > playbuttonLeftX && xpos < playbuttonRightX &&
-            ypos > playbuttonTopY && ypos < playbuttonBottomY) {
-                isPlaying = true;
+        if (xpos > appState.playButton.leftX && xpos < appState.playButton.rightX &&
+            ypos > appState.playButton.topY && ypos < appState.playButton.bottomY) {
+                appState.isPlaying = true;
             }
         // loopButton pressed
-        if (xpos > loopbuttonLeftX && xpos < loopbuttonRightX &&
-            ypos > loopbuttonTopY && ypos < loopbuttonBottomY) {
-                shouldLoop = !shouldLoop;
+        if (xpos > appState.loopButton.leftX && xpos < appState.loopButton.rightX &&
+            ypos > appState.loopButton.topY && ypos < appState.loopButton.bottomY) {
+                appState.shouldLoop = !appState.shouldLoop;
             }
         // Use uniforms for when playing so its red and can't press again
         // Use uniforms for when mouse is hovering over the button. (Probably have to use a 
