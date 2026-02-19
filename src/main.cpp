@@ -4,7 +4,6 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "glm/gtc/matrix_transform.hpp"
 
 #include "WAVReader.h"
 #include <waveformUtils.h>
@@ -39,6 +38,9 @@ bool shouldLoop{false};
     Button loopButton;
     glm::mat4 uiProjection{1.0F};
 std::unique_ptr<Shader> UIShader;
+};
+
+appState appState;
 
 int main() {
     GLFWwindow* window{setupGLFW()};
@@ -48,8 +50,6 @@ int main() {
         std::print("GLFW Window setup unsuccessful\n");
         return -1;
     }
-
-    std::cout << "Hello, from InstrumentAudioVisualiser!\n";
 
     std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
@@ -120,8 +120,6 @@ int main() {
     float dtTime{static_cast<float>(glfwGetTime())};
     float previousFrame{};
     float currentFrame{};
-
-    bool currentButtonIsPlay{};
 
     int offset{};
     int totalOffset{};
@@ -212,7 +210,7 @@ GLFWwindow* setupGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT), windowName, nullptr, nullptr);
     if (window == nullptr) {
         std::print(stderr, "Failed to create GLFW Window");
         glfwTerminate();
