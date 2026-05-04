@@ -2,12 +2,15 @@
 #include <memory>
 #include <print>
 
+#include <numbers>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "WAVReader.h"
-#include <waveformUtils.h>
+#include "waveformUtils.h"
 #include "shader.h"
+#include "FFT.h"
 
 GLFWwindow* setupGLFW();
 void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
@@ -51,7 +54,34 @@ int main() {
         return -1;
     }
 
-    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
+    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/sample100hz.wav");
+
+    // Testing FFT
+    std::vector<float> samples(1024);
+    for (int i = 0;i < 1024;i++) {
+        float t = static_cast<float>(i) / 44100;
+        samples[i] = sin(2 * std::numbers::pi * 100 * t) + sin(2 * std::numbers::pi * 1000 * t);
+    }
+    std::vector<std::complex<float>> fftInput(samples.begin(), samples.end());
+    std::vector<std::complex<float>> fftResult{fft(fftInput)};
+    std::print("Bins 0 - 6\n");
+    std::print("{}\n", std::abs(fftResult[0]));
+    std::print("{}\n", std::abs(fftResult[1]));
+    std::print("{}\n", std::abs(fftResult[2]));
+    std::print("{}\n", std::abs(fftResult[3]));
+    std::print("{}\n", std::abs(fftResult[4]));
+    std::print("{}\n", std::abs(fftResult[5]));
+    std::print("{}\n", std::abs(fftResult[6]));
+
+    std::print("Bins 20 - 26\n");
+    std::print("{}\n", std::abs(fftResult[20]));
+    std::print("{}\n", std::abs(fftResult[21]));
+    std::print("{}\n", std::abs(fftResult[22]));
+    std::print("{}\n", std::abs(fftResult[23]));
+    std::print("{}\n", std::abs(fftResult[24]));
+    std::print("{}\n", std::abs(fftResult[25]));
+    std::print("{}\n", std::abs(fftResult[26]));
+    // End Testing FFT
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     // auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
@@ -109,10 +139,6 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
-
-    int nrAttribes{};
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttribes);
-    std::println("Number nr of vertex attributes supported: {}", nrAttribes);
 
     float currentFrame{};
     float previousFrame{};

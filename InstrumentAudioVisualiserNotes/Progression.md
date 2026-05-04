@@ -40,9 +40,8 @@ Implement opengl in project
 - [x] Refactor to be cleaner and clearer as too many non-const globals.
 
 # Your first FFT
-- [ ] Implement FFT
-	- [ ] Just print the values for now
-	- [ ] OpenGL: Have top half for waveform and bottom half for FFT
+- [x] Implement FFT
+	- [x] Just print the values for now
 
 # Implement multi threaded/real-time FFT
 - Main thread - representing FFT (printing values for now) and waveform (rendering).
