@@ -77,12 +77,3 @@ void WAVReader::loadPcmData() {
 
     drwav_read_pcm_frames_f32(&m_wav, totalFrames, audioData.data());
 }
-
-// drwav_read_pcm_frames_f32() to get pcm samples
-/*Use something like:
-unsigned long long totalFrames = wav.totalPCMFrameCount;
-std::vector<float> audioData(totalFrames * wav.channels);
-
-drwav_uint64 framesRead = drwav_read_pcm_frames_f32(&wav, totalFrames, audioData
-to store data in std::vector instead of using float*
-*/

@@ -2,9 +2,8 @@
 
 #include <glad/glad.h>
 
+// Used for verifying opengl rendering waveform correctly
 void WaveformUtils::printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile) {
-    // FEATURE: Add support for stereo and non 0DBFS.
-
     if (WAVFile->getChannels() > 1) {
         std::print("Terminal style waveform supports 1 channel\n");
         return;
@@ -17,7 +16,6 @@ void WaveformUtils::printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVF
     int width{30};
 
     for (auto sample : samples) {
-        // PERF: Validate entire entire file or big chunks once before the loop
         if (abs(sample) > 1.0) {
             std::print("Terminal style waveform only support 0dDBFS");
             return;

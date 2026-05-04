@@ -114,15 +114,12 @@ int main() {
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttribes);
     std::println("Number nr of vertex attributes supported: {}", nrAttribes);
 
-    float samplesToAdvance{};
-    float fractionalLoss{};
-    uint32_t sampleRate{WAVFile->getSampleRate()};
-    float dtTime{static_cast<float>(glfwGetTime())};
-    float previousFrame{};
     float currentFrame{};
+    float previousFrame{};
 
-    int offset{};
+    float fractionalLoss{};
     uint totalOffset{};
+    uint32_t sampleRate{WAVFile->getSampleRate()};
 
     appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
@@ -131,7 +128,7 @@ int main() {
 
         // Delta time
         currentFrame = static_cast<float>(glfwGetTime());
-        dtTime = currentFrame - previousFrame;
+        float dtTime = currentFrame - previousFrame;
         previousFrame = currentFrame;
         
         // UI functionality
@@ -143,11 +140,11 @@ int main() {
         }
         if (appState.isPlaying) {
             // Update Vertecies by amount of time passed
-            samplesToAdvance = sampleRate * dtTime;
+            float samplesToAdvance = sampleRate * dtTime;
             // Get Fractional part
             fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
             // Add missed Integral fractionalLoss if any
-            offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
+            int offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
             totalOffset += offset;
             // Send vertex data to GPU
             WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);
@@ -263,8 +260,7 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
             ypos > appState.loopButton.topY && ypos < appState.loopButton.bottomY) {
                 appState.shouldLoop = !appState.shouldLoop;
             }
-        // Use uniforms for when playing so its red and can't press again
-        // Use uniforms for when mouse is hovering over the button. (Probably have to use a 
-        // seperate callback for when mouse pos moves)
+
+        // POLISH: Use uniforms for when mouse is hovering over the button.
     }
 }
