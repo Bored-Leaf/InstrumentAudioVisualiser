@@ -54,7 +54,7 @@ int main() {
         return -1;
     }
 
-    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/sample100hz.wav");
+    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
     // Testing FFT
     std::vector<float> samples(1024);
@@ -158,6 +158,7 @@ int main() {
         previousFrame = currentFrame;
         
         // UI functionality
+        // BUG: Only seems to work on
         if (totalOffset > WAVFile->getTotalSampleCount()) {
             if (!appState.shouldLoop) {
                 appState.isPlaying = false;
