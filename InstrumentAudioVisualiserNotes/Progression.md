@@ -44,17 +44,15 @@ Implement opengl in project
 	- [x] Just print the values for now
 
 # Implement multi threaded/real-time FFT
+- [ ] Implement CircularBuffer for use in multi-threading
+	- Also good optimisation to prevent allocations for waveformVerticies
+
 - Main thread - representing FFT (printing values for now) and waveform (rendering).
 - Background thread - Readings input, calculates FFT, feeds main thread for rendering.
 Want it to simulate real-time flow
 
-# Rendering waveform *and* FFT with main thread
+# Rendering waveform *and* FFT with main thread and make look nice
 - [ ] Render the FFT with main thread
-
-# Optimise and Polish
-Optimisation:
-- [ ] Use Circular buffer for waveformVerticies? (Need a circular buffer for real-time implementation as well so good for practice)
-	- This way I only need to add the new vertices and get rid of old ones instead of rewriting the whole vector every frame.
 
 Polishing:
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
