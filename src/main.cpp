@@ -11,6 +11,7 @@
 #include "waveformUtils.h"
 #include "shader.h"
 #include "FFT.h"
+#include "CircularBuffer.h"
 
 GLFWwindow* setupGLFW();
 void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
@@ -18,6 +19,9 @@ void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
+
+void FFTTesting();
+void cicularTesting();
 
 constexpr float SCR_WIDTH{800.0F};
 constexpr float SCR_HEIGHT{600.0F};
@@ -56,32 +60,8 @@ int main() {
 
     std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
-    // Testing FFT
-    std::vector<float> samples(1024);
-    for (int i = 0;i < 1024;i++) {
-        float t = static_cast<float>(i) / 44100;
-        samples[i] = sin(2 * std::numbers::pi * 100 * t) + sin(2 * std::numbers::pi * 1000 * t);
-    }
-    std::vector<std::complex<float>> fftInput(samples.begin(), samples.end());
-    std::vector<std::complex<float>> fftResult{fft(fftInput)};
-    std::print("Bins 0 - 6\n");
-    std::print("{}\n", std::abs(fftResult[0]));
-    std::print("{}\n", std::abs(fftResult[1]));
-    std::print("{}\n", std::abs(fftResult[2]));
-    std::print("{}\n", std::abs(fftResult[3]));
-    std::print("{}\n", std::abs(fftResult[4]));
-    std::print("{}\n", std::abs(fftResult[5]));
-    std::print("{}\n", std::abs(fftResult[6]));
-
-    std::print("Bins 20 - 26\n");
-    std::print("{}\n", std::abs(fftResult[20]));
-    std::print("{}\n", std::abs(fftResult[21]));
-    std::print("{}\n", std::abs(fftResult[22]));
-    std::print("{}\n", std::abs(fftResult[23]));
-    std::print("{}\n", std::abs(fftResult[24]));
-    std::print("{}\n", std::abs(fftResult[25]));
-    std::print("{}\n", std::abs(fftResult[26]));
-    // End Testing FFT
+    //FFTTesting();
+    cicularTesting();
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     // auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
@@ -158,7 +138,7 @@ int main() {
         previousFrame = currentFrame;
         
         // UI functionality
-        // BUG: Only seems to work on
+        // BUG: Only seems to work on Ouch-2.wav
         if (totalOffset > WAVFile->getTotalSampleCount()) {
             if (!appState.shouldLoop) {
                 appState.isPlaying = false;
@@ -290,4 +270,52 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
 
         // POLISH: Use uniforms for when mouse is hovering over the button.
     }
+}
+
+void FFTTesting() {
+    // Testing FFT
+    std::vector<float> samples(1024);
+    for (int i = 0;i < 1024;i++) {
+        float t = static_cast<float>(i) / 44100;
+        samples[i] = sin(2 * std::numbers::pi * 100 * t) + sin(2 * std::numbers::pi * 1000 * t);
+    }
+    std::vector<std::complex<float>> fftInput(samples.begin(), samples.end());
+    std::vector<std::complex<float>> fftResult{fft(fftInput)};
+    std::print("Bins 0 - 6\n");
+    std::print("{}\n", std::abs(fftResult[0]));
+    std::print("{}\n", std::abs(fftResult[1]));
+    std::print("{}\n", std::abs(fftResult[2]));
+    std::print("{}\n", std::abs(fftResult[3]));
+    std::print("{}\n", std::abs(fftResult[4]));
+    std::print("{}\n", std::abs(fftResult[5]));
+    std::print("{}\n", std::abs(fftResult[6]));
+
+    std::print("Bins 20 - 26\n");
+    std::print("{}\n", std::abs(fftResult[20]));
+    std::print("{}\n", std::abs(fftResult[21]));
+    std::print("{}\n", std::abs(fftResult[22]));
+    std::print("{}\n", std::abs(fftResult[23]));
+    std::print("{}\n", std::abs(fftResult[24]));
+    std::print("{}\n", std::abs(fftResult[25]));
+    std::print("{}\n", std::abs(fftResult[26]));
+    // End Testing FFT
+}
+
+void cicularTesting() {
+    CircularBuffer<float> buffer(100);
+    std::vector<float> inbuffer(50);
+    for (size_t i = 0;i < inbuffer.size();i++) {
+        inbuffer[i] = static_cast<float>((i+1)*2-1);
+    }
+    buffer.write(inbuffer);
+    std::vector<float> outBuffer(50);
+    buffer.read(outBuffer, 50);
+    for (auto num:inbuffer) {
+        std::print("{} ", num);
+    }
+    std::print("\n");
+    for (auto num:outBuffer) {
+        std::print("{} ", num);
+    }
+    std::print("\n");
 }
