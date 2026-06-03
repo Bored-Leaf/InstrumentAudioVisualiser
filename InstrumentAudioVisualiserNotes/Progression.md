@@ -44,8 +44,7 @@ Implement opengl in project
 	- [x] Just print the values for now
 
 # Implement multi threaded/real-time FFT
-- [ ] Implement CircularBuffer for use in multi-threading
-	- Also good optimisation to prevent allocations for waveformVerticies
+- [x] Implement CircularBuffer for use in multi-threading
 
 - Main thread - representing FFT (printing values for now) and waveform (rendering).
 - Background thread - Readings input, calculates FFT, feeds main thread for rendering.
@@ -54,29 +53,19 @@ Want it to simulate real-time flow
 # Rendering waveform *and* FFT with main thread and make look nice
 - [ ] Render the FFT with main thread
 
-Polishing:
+# Light Polishing
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
 - [ ] Better button icons and effect when hovering mouse over
 - [ ] Play the audio file
 	- [ ] Play the actual audio from the file
 	- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
 
-# FFT Bars
-- [ ] 
-
-# FFT Line Graph
-- [ ] 
- 
-# Spectrogram
-- [ ] 
+# More FFT visuals
+- [ ] FFT Line Graph
+- [ ] Spectrogram
+- [ ] Have UI option to switch between the 3
  
 # Real-time audio
 Add option when opening application if file or live instrument
 - [ ] if file then select 
 - [ ] if live instrument then yeah...
-
-# MIDI Support
-- [ ] reads midi data
-- [ ] Real-time auto
-
-# [[Features/Visualisation/Overview|More Visualisations]]
