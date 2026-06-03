@@ -69,3 +69,9 @@ Want it to simulate real-time flow
 Add option when opening application if file or live instrument
 - [ ] if file then select 
 - [ ] if live instrument then yeah...
+
+# Final Polish
+Mostly a combination of a bunch of little stuff
+- [ ] Peak holds on fft line graph
+	- [ ] Button to reset peak holds
+- [ ] faint grid lines on all relevant graphs to make look nice
