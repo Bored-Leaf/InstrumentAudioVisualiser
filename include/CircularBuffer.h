@@ -1,4 +1,7 @@
+#pragma once
+
 #include <vector>
+#include <print>
 
 template <typename T>
 class CircularBuffer {
@@ -8,7 +11,10 @@ public:
                             , m_buffer(size) {}
     
     bool write(const std::vector<T> &chunk) {
-        if (chunk.size() > m_capacity - m_size) return false;
+        if (chunk.size() > m_capacity - m_size) {
+            std::print("Too big to write: {} | {}\n", chunk.size(), m_size);
+            return false;
+        }
 
         for (size_t i = 0;i < chunk.size();i++) {
             m_buffer[(m_writeIndex + i) % m_capacity] = chunk[i];
@@ -22,7 +28,10 @@ public:
     }
     
     bool read(std::vector<T> &out, const int count) {
-        if (m_size < count) return false;
+        if (m_size < count) {
+            std::print("Too little to read\n");
+            return false;
+        }
 
         out.resize(count);
 
@@ -35,6 +44,10 @@ public:
         m_size -= count;
 
         return true;
+    }
+
+    int getSize() {
+        return m_size;
     }
 private:
     std::vector<T> m_buffer{};
