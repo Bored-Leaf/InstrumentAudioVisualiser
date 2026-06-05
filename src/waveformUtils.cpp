@@ -37,38 +37,8 @@ void WaveformUtils::printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVF
     }
 }
 
-std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset) {
-    // PERF: taking in a reference to a float to reduce allocations each frame
-    std::vector<float> samples = WAVFile->getSamplesOffset(amount, offset);
-    std::vector<float> wavVertices{};
-
-    if (WAVFile->getTotalSampleCount() < amount) {
-        wavVertices.reserve(amount * 3);
-        fillwavVector(wavVertices, samples, amount);
-    } else {
-        wavVertices.reserve(samples.size() * 3);
-        fillwavVector(wavVertices, samples, amount);
-    }
-
-    return wavVertices;
-}
-
-void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, std::vector<float> &samples, const size_t totalAmount) {
-    float normalised_x{};
-    for (size_t i = 0;i < totalAmount;i++) {
-        normalised_x = (totalAmount > 1)
-            ? (2.0F * static_cast<float>(i) / (totalAmount - 1)) -1.0F
-            : 0.0F;
-        
-        if (i < samples.size()) {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, samples[i], 0});
-        } else {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, 0.0F, 0});
-        }
-        }
-}
-
-void WaveformUtils::updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance, int amount) {
+std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, const int sampleAmount, const int samplesToAdvance) {
+    // CRIT: only call from one thread else offset would get messy
     static int offSet{0};
 
     offSet+=samplesToAdvance;
@@ -76,8 +46,38 @@ void WaveformUtils::updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile
     if (offSet > WAVFile->getTotalSampleCount()) {
         offSet = 0;
     }
-    std::vector<float> waveformVertices = wavSamplesToVertices(WAVFile, amount, offSet);
 
+    // TODO: Use CirulcarBuffer to write data to
+    std::vector<float> samples = WAVFile->getSamplesOffset(sampleAmount, offSet);
+    std::vector<float> wavVertices{};
+
+    if (WAVFile->getTotalSampleCount() < sampleAmount) {
+        wavVertices.reserve(sampleAmount * 3);
+        fillwavVector(wavVertices, samples, sampleAmount);
+    } else {
+        wavVertices.reserve(samples.size() * 3);
+        fillwavVector(wavVertices, samples, sampleAmount);
+    }
+
+    return wavVertices;
+}
+
+void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samplesToUse, size_t amount) {
+    float normalised_x{};
+    for (size_t i = 0;i < amount;i++) {
+        normalised_x = (amount > 1)
+            ? (2.0F * static_cast<float>(i) / (amount - 1)) -1.0F
+            : 0.0F;
+        
+        if (i < samplesToUse.size()) {
+            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, samplesToUse[i], 0});
+        } else {
+            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, 0.0F, 0});
+        }
+        }
+}
+
+void WaveformUtils::updateWavVerticies(const int VBO, const std::vector<float> &waveformVerticies) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, waveformVertices.size() * sizeof(float), waveformVertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, waveformVerticies.size() * sizeof(float), waveformVerticies.data(), GL_STATIC_DRAW);
 }

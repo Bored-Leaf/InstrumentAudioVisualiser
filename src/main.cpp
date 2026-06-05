@@ -137,8 +137,11 @@ int main() {
             // Add missed Integral fractionalLoss if any
             int offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
             totalOffset += offset;
-            // Send vertex data to GPU
-            WaveformUtils::updateWavVerticies(WAVFile, waveformVBO, offset, waveformWindow);
+            
+            // Generate and send vertex data to GPU
+            int sampleAmount = waveformWindow;
+            std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(WAVFile, sampleAmount, offset);
+            WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
             
             // The Integral has been added above so remove
             if (fractionalLoss > 1.0F) {
@@ -258,7 +261,7 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
 
 void audioWorker(AppState& state) {
     while(state.running) {
-        
+
     }
 }
 

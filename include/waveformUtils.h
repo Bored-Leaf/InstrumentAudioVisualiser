@@ -7,7 +7,7 @@
 
 namespace WaveformUtils {
     void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
-    std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int amount, int offset);
-    void fillwavVector(std::vector<float> &wavVectorToFill, std::vector<float> &samples, const size_t sampleSize);
-    void updateWavVerticies(const std::unique_ptr<WAVReader> &WAVFile, unsigned int VBO, int samplesToAdvance, int amount);
+    std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int sampleAmount, int samplesToAdvance);
+    void fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samples, size_t amount);
+    void updateWavVerticies(int VBO, const std::vector<float> &waveformVerticies);
 }
