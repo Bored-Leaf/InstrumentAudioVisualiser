@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(glfw3 3.3 REQUIRED)
+set(OpenGL_GL_PREFERENCE "GLVND")
+
+find_package(glfw3 3.5 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.c" "learning/*.cpp")
