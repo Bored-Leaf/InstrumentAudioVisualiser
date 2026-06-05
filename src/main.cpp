@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <print>
-
+#include <atomic>
 #include <numbers>
 
 #include <glad/glad.h>
@@ -12,6 +12,7 @@
 #include "shader.h"
 #include "FFT.h"
 #include "CircularBuffer.h"
+#include "AppState.h"
 
 GLFWwindow* setupGLFW();
 void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
@@ -19,6 +20,8 @@ void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
+
+void audioWorker(AppState& state);
 
 void FFTTesting();
 void cicularTesting();
@@ -28,26 +31,7 @@ constexpr float SCR_HEIGHT{600.0F};
 constexpr const char* windowName{"Instrument Audio Visualiser"};
 constexpr int waveformWindow{441 * 30};
 
-struct Button {
-    float leftX{};
-    float rightX{};
-    float topY{};
-    float bottomY{};
-
-    bool isactive{};
-};
-
-struct appState {
-    bool isPlaying{false};
-    bool shouldLoop{false};
-
-    Button playButton;
-    Button loopButton;
-    glm::mat4 uiProjection{1.0F};
-    std::unique_ptr<Shader> UIShader;
-};
-
-appState appState;
+AppState appState;
 
 int main() {
     GLFWwindow* window{setupGLFW()};
@@ -272,8 +256,15 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
     }
 }
 
+void audioWorker(AppState& state) {
+    while(state.running) {
+        
+    }
+}
+
 void FFTTesting() {
-    // Testing FFT
+    std::print("FFT testing");
+
     std::vector<float> samples(1024);
     for (int i = 0;i < 1024;i++) {
         float t = static_cast<float>(i) / 44100;
@@ -298,10 +289,11 @@ void FFTTesting() {
     std::print("{}\n", std::abs(fftResult[24]));
     std::print("{}\n", std::abs(fftResult[25]));
     std::print("{}\n", std::abs(fftResult[26]));
-    // End Testing FFT
 }
 
 void cicularTesting() {
+    std::print("Circular Buffer testing\n");
+
     CircularBuffer<float> buffer(100);
     std::vector<float> inbuffer(50);
     for (size_t i = 0;i < inbuffer.size();i++) {
