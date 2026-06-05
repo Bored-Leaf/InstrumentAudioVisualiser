@@ -64,6 +64,7 @@ Want it to simulate real-time flow
 - [ ] FFT Line Graph
 - [ ] Spectrogram
 - [ ] Have UI option to switch between the 3
+- This is more so for more practice working with graphics
  
 # Real-time audio
 Add option when opening application if file or live instrument
@@ -72,6 +73,6 @@ Add option when opening application if file or live instrument
 
 # Final Polish
 Mostly a combination of a bunch of little stuff
-- [ ] Peak holds on fft line graph
+- [ ] Peak holds on fft line/bar graph
 	- [ ] Button to reset peak holds
 - [ ] faint grid lines on all relevant graphs to make look nice
