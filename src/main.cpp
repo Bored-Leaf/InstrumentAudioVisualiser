@@ -1,7 +1,6 @@
 #include <iostream>
 #include <memory>
 #include <print>
-#include <atomic>
 #include <numbers>
 
 #include <glad/glad.h>
@@ -48,7 +47,6 @@ int main() {
     cicularTesting();
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
-    // auto UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
