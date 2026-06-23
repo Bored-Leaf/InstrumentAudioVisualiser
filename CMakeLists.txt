@@ -11,6 +11,13 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(glfw3 3.5 REQUIRED)
 find_package(OpenGL REQUIRED)
 
+# Copies shader files to build directory
+file(GLOB SHADER_FILES CONFIGURE_DEPENDS "src/shaders/*")
+add_custom_target(CopyShaders ALL
+    COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_FILES} ${CMAKE_BINARY_DIR}/shaders
+    COMMENT "Copying shaders to build directory..."
+)
+
 file(GLOB SOURCE_FILES "src/*.cpp" "src/*.c" "learning/*.cpp")
 
 add_executable(
