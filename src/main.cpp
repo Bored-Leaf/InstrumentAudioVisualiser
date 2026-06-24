@@ -130,11 +130,10 @@ int main() {
             {
                 std::lock_guard<std::mutex> lock(appState.mtx);
                 bool success{appState.buffer.read(waveformVerticies, sampleAmount * 3)};
-                if (!success) {
-                    std::print("Buffer is full, won't write\n");
-                } else {
-                    //std::print("Successful buffer read: {}\n", waveformVerticies.size());
+                if (success) {
                     WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
+                } else {
+                    std::print("Buffer is full, won't write\n");
                 }
             }
         }
@@ -293,14 +292,14 @@ void audioWorker(AppState& state) {
                 bool success{state.buffer.write(waveformVerticies)};
                 if (!success) {
                     std::print("Buffer is full, won't write!\n");
-                } else {
-                    // std::print("Successful buffer write: {}\n", waveformVerticies.size());
                 }
             }
         }
 
         // BUG: Needed or else waveform will stop at weird place
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        // Assume mismatch between main thread and this thread from
+        // different read/write speeds
+        //std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
