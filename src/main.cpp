@@ -299,7 +299,7 @@ void audioWorker(AppState& state) {
         // BUG: Needed or else waveform will stop at weird place
         // Assume mismatch between main thread and this thread from
         // different read/write speeds
-        //std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
