@@ -2,11 +2,12 @@
 #include <memory>
 #include <print>
 #include <numbers>
+#include <thread>
+#include <chrono>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "WAVReader.h"
 #include "waveformUtils.h"
 #include "shader.h"
 #include "FFT.h"
@@ -41,7 +42,8 @@ int main() {
         return -1;
     }
 
-    std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
+    //std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
+    appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
     //FFTTesting();
     cicularTesting();
@@ -75,7 +77,7 @@ int main() {
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
-    std::vector<float> waveformVertices{WaveformUtils::wavSamplesToVertices(WAVFile, waveformWindow, 0)};
+    std::vector<float> startingWaveformVertices{WaveformUtils::wavSamplesToVertices(appState.WAVFile, waveformWindow, 0)};
 
     unsigned int waveformVAO{};
     unsigned int UIVAO{};
@@ -90,7 +92,7 @@ int main() {
     glBindVertexArray(waveformVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(waveformVertices.size() * sizeof(float)), waveformVertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(startingWaveformVertices.size() * sizeof(float)), startingWaveformVertices.data(), GL_DYNAMIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
@@ -101,16 +103,15 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
-
-    float currentFrame{};
-    float previousFrame{};
-
-    float fractionalLoss{};
-    uint totalOffset{};
-    uint32_t sampleRate{WAVFile->getSampleRate()};
-
     appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
 
+    std::thread audioThread(audioWorker, std::ref(appState));
+    
+    float currentFrame{};
+    float previousFrame{};
+    uint32_t sampleRate{appState.WAVFile->getSampleRate()};
+
+    appState.running = true;
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -119,34 +120,25 @@ int main() {
         float dtTime = currentFrame - previousFrame;
         previousFrame = currentFrame;
         
+        
         // UI functionality
         // BUG: Only seems to work on Ouch-2.wav
-        if (totalOffset > WAVFile->getTotalSampleCount()) {
-            if (!appState.shouldLoop) {
-                appState.isPlaying = false;
-            }
-            totalOffset = 0;
-        }
         if (appState.isPlaying) {
-            // Update Vertecies by amount of time passed
-            float samplesToAdvance = sampleRate * dtTime;
-            // Get Fractional part
-            fractionalLoss += samplesToAdvance - static_cast<int>(samplesToAdvance);
-            // Add missed Integral fractionalLoss if any
-            int offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
-            totalOffset += offset;
-            
-            // Generate and send vertex data to GPU
-            int sampleAmount = waveformWindow;
-            std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(WAVFile, sampleAmount, offset);
-            WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
-            
-            // The Integral has been added above so remove
-            if (fractionalLoss > 1.0F) {
-                fractionalLoss -= 1;
+            std::vector<float> waveformVerticies{};
+            int sampleAmount{waveformWindow};
+
+            {
+                std::lock_guard<std::mutex> lock(appState.mtx);
+                bool success{appState.buffer.read(waveformVerticies, sampleAmount * 3)};
+                if (!success) {
+                    std::print("Buffer is full, won't write\n");
+                } else {
+                    //std::print("Successful buffer read: {}\n", waveformVerticies.size());
+                    WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
+                }
             }
         }
-
+        
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -178,6 +170,9 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    appState.running = false;
+    audioThread.join();
 
     glDeleteVertexArrays(1, &waveformVAO);
     glDeleteBuffers(1, &waveformVBO);
@@ -258,8 +253,54 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
 }
 
 void audioWorker(AppState& state) {
-    while(state.running) {
+    float currentFrame{};
+    float previousFrame{};
 
+    float fractionalLoss{};
+    uint totalOffset{};
+    uint32_t sampleRate{state.WAVFile->getSampleRate()};
+
+    while(state.running) {
+        currentFrame = static_cast<float>(glfwGetTime());
+        float dtTime = currentFrame - previousFrame;
+        previousFrame = currentFrame;
+        
+        // UI functionality
+        // BUG: Only seems to work on Ouch-2.wav
+        if (totalOffset > state.WAVFile->getTotalSampleCount()) {
+            if(!state.shouldLoop) {
+                state.isPlaying = false;
+            }
+            totalOffset = 0;
+        }
+        if (state.isPlaying) {
+            float samplesToAdvance = sampleRate * dtTime;
+            //Get fractional part
+            fractionalLoss = samplesToAdvance - static_cast<int>(samplesToAdvance);
+            int offset = static_cast<int>(samplesToAdvance) + static_cast<int>(fractionalLoss);
+            totalOffset += offset;
+
+            // Generate and send vertex data to GPU
+            int sampleAmount{waveformWindow};
+            std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(state.WAVFile, sampleAmount, offset);
+            
+            if (fractionalLoss > 1.0F) {
+                fractionalLoss -= 1;
+            }
+
+            { 
+                std::lock_guard<std::mutex> lock(state.mtx);
+                bool success{state.buffer.write(waveformVerticies)};
+                if (!success) {
+                    std::print("Buffer is full, won't write!\n");
+                } else {
+                    // std::print("Successful buffer write: {}\n", waveformVerticies.size());
+                }
+            }
+        }
+
+        // BUG: Needed or else waveform will stop at weird place
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
