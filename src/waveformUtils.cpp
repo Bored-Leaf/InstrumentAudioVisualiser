@@ -77,7 +77,7 @@ void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std
         }
 }
 
-void WaveformUtils::updateWavVerticies(const int VBO, const std::vector<float> &waveformVerticies) {
+void WaveformUtils::updateWavVerticies(const unsigned int VBO, const std::vector<float> &waveformVerticies) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, waveformVerticies.size() * sizeof(float), waveformVerticies.data(), GL_STATIC_DRAW);
 }
