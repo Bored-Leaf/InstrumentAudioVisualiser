@@ -46,19 +46,24 @@ Implement opengl in project
 # Implement multi threaded/real-time FFT
 - [x] Implement CircularBuffer for use in multi-threading
 
-- Main thread - representing FFT (printing values for now) and waveform (rendering).
-- Background thread - Readings input, calculates FFT, feeds main thread for rendering.
+- [x] Main thread - representing FFT (printing values for now) and waveform (rendering).
+- [x] Background thread - Readings input, calculates FFT, feeds main thread for rendering.
 Want it to simulate real-time flow
 
 # Rendering waveform *and* FFT with main thread and make look nice
 - [ ] Render the FFT with main thread
 
-# Light Polishing
+# Light Polishing/Optimising
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
 - [ ] Better button icons and effect when hovering mouse over
 - [ ] Play the audio file
 	- [ ] Play the actual audio from the file
 	- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
+- [ ] Change so instead of writing and reading 10s of thousands of elements per frame to only a couple hundred.
+	- [ ] I assume changing sampleAmount to only new samples (which is a couple hundred a frame)
+	- [ ] Make background thread only gather new samples and calculate fft and main thread will generate the extra x and z verticies per sample for the gpu.
+	- [ ] Make main thread use glbuffersubdata to again reduce the total amount of data moved per frame.
+		- [ ] Maybe can be used to reduce the buffer capacity as it won't need to hold as much data if the gpu will update the samples/vertex data instead.
 
 # More FFT visuals
 - [ ] FFT Line Graph
