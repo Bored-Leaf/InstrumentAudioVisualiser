@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <print>
 #include <numbers>
 #include <thread>
@@ -24,12 +25,12 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 void audioWorker(AppState& state);
 
 void FFTTesting();
-void cicularTesting();
 
 constexpr float SCR_WIDTH{800.0F};
 constexpr float SCR_HEIGHT{600.0F};
-constexpr const char* windowName{"Instrument Audio Visualiser"};
-constexpr int waveformWindow{441 * 30};
+constexpr const char* WINDOW_NAME{"Instrument Audio Visualiser"};
+constexpr int WAVEFORM_WINDOW{441 * 30};
+constexpr int FFT_WINDOW{1024};
 
 AppState appState;
 
@@ -44,9 +45,6 @@ int main() {
 
     //std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
-
-    //FFTTesting();
-    cicularTesting();
 
     auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
@@ -77,7 +75,7 @@ int main() {
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
-    std::vector<float> startingWaveformVertices{WaveformUtils::wavSamplesToVertices(appState.WAVFile, waveformWindow, 0)};
+    std::vector<float> startingWaveformVertices{WaveformUtils::wavSamplesToVertices(appState.WAVFile, WAVEFORM_WINDOW, 0)};
 
     unsigned int waveformVAO{};
     unsigned int UIVAO{};
@@ -125,16 +123,26 @@ int main() {
         // BUG: Only seems to work on Ouch-2.wav
         if (appState.isPlaying) {
             std::vector<float> waveformVerticies{};
-            int sampleAmount{waveformWindow};
+            std::vector<std::complex<float>> fftOutput{};
+            int sampleAmount{WAVEFORM_WINDOW};
 
-            {
+            {   // waveform
                 std::lock_guard<std::mutex> lock(appState.mtx);
-                bool success{appState.buffer.read(waveformVerticies, sampleAmount * 3)};
+                bool success{appState.waveformBuffer.read(waveformVerticies, sampleAmount * 3)};
                 if (success) {
                     WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
                 } else {
-                    std::print("Buffer is full, won't write\n");
+                    //std::print("Buffer is full, won't write\n");
                 }
+            }
+
+            {   // fft
+                std::lock_guard<std::mutex> lock(appState.mtx);
+                bool success{appState.fftBuffer.read(fftOutput, FFT_WINDOW)};
+                if (success) {
+                    std::print("AYAYAYYAYAYA READING GOOD\n");
+                }
+                
             }
         }
         
@@ -145,7 +153,7 @@ int main() {
 
         glLineWidth(2.0F);
         glBindVertexArray(waveformVAO);
-        glDrawArrays(GL_LINE_STRIP, 0, waveformWindow);
+        glDrawArrays(GL_LINE_STRIP, 0, WAVEFORM_WINDOW);
 
         appState.UIShader->use();
         appState.UIShader->setMat4("projection", appState.uiProjection);
@@ -193,7 +201,7 @@ GLFWwindow* setupGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT), windowName, nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT), WINDOW_NAME, nullptr, nullptr);
     if (window == nullptr) {
         std::print(stderr, "Failed to create GLFW Window");
         glfwTerminate();
@@ -255,9 +263,12 @@ void audioWorker(AppState& state) {
     float currentFrame{};
     float previousFrame{};
 
-    float fractionalLoss{};
-    uint totalOffset{};
-    uint32_t sampleRate{state.WAVFile->getSampleRate()};
+    float       fractionalLoss{};
+    uint        totalOffset{};
+    uint32_t    sampleRate{state.WAVFile->getSampleRate()};
+
+    std::vector<std::complex<float>>    fftInput{};
+    std::vector<float>                  newSamples{};
 
     while(state.running) {
         currentFrame = static_cast<float>(glfwGetTime());
@@ -273,6 +284,8 @@ void audioWorker(AppState& state) {
             totalOffset = 0;
         }
         if (state.isPlaying) {
+            // Waveform sample pushing
+
             float samplesToAdvance = sampleRate * dtTime;
             //Get fractional part
             fractionalLoss = samplesToAdvance - static_cast<int>(samplesToAdvance);
@@ -280,7 +293,7 @@ void audioWorker(AppState& state) {
             totalOffset += offset;
 
             // Generate and send vertex data to GPU
-            int sampleAmount{waveformWindow};
+            int sampleAmount{WAVEFORM_WINDOW};
             std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(state.WAVFile, sampleAmount, offset);
             
             if (fractionalLoss > 1.0F) {
@@ -289,10 +302,30 @@ void audioWorker(AppState& state) {
 
             { 
                 std::lock_guard<std::mutex> lock(state.mtx);
-                bool success{state.buffer.write(waveformVerticies)};
+                bool success{state.waveformBuffer.write(waveformVerticies)};
                 if (!success) {
-                    std::print("Buffer is full, won't write!\n");
+                    // std::print("Buffer is full, won't write!\n");
                 }
+            }
+
+            // FFT computation and pushing
+            std::vector<float> samplesToAdd{state.WAVFile->getSamples(sampleRate * dtTime)};
+            newSamples.insert(newSamples.begin(), samplesToAdd.begin(), samplesToAdd.end());
+
+            if (newSamples.size() >= FFT_WINDOW) {
+                fftInput.insert(fftInput.begin(), newSamples.begin(), newSamples.begin() + FFT_WINDOW);
+                {
+                    std::lock_guard<std::mutex> lock(state.mtx);
+                    bool success(state.fftBuffer.write(fft(fftInput)));
+                    if (!success) {
+                        std::print("fft computation has too many elements in input. input should only have {} elements "
+                                "not {}!!\n", FFT_WINDOW, fftInput.size());
+                    } else {
+                        std::print("YAYAYAYAA WRITING GOOD\n");
+                    }
+                }
+                fftInput.erase(fftInput.begin(), fftInput.begin() + FFT_WINDOW);
+                newSamples.erase(newSamples.begin(), newSamples.begin() + FFT_WINDOW);
             }
         }
 
@@ -330,25 +363,4 @@ void FFTTesting() {
     std::print("{}\n", std::abs(fftResult[24]));
     std::print("{}\n", std::abs(fftResult[25]));
     std::print("{}\n", std::abs(fftResult[26]));
-}
-
-void cicularTesting() {
-    std::print("Circular Buffer testing\n");
-
-    CircularBuffer<float> buffer(100);
-    std::vector<float> inbuffer(50);
-    for (size_t i = 0;i < inbuffer.size();i++) {
-        inbuffer[i] = static_cast<float>((i+1)*2-1);
-    }
-    buffer.write(inbuffer);
-    std::vector<float> outBuffer(50);
-    buffer.read(outBuffer, 50);
-    for (auto num:inbuffer) {
-        std::print("{} ", num);
-    }
-    std::print("\n");
-    for (auto num:outBuffer) {
-        std::print("{} ", num);
-    }
-    std::print("\n");
 }

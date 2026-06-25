@@ -51,7 +51,7 @@ Implement opengl in project
 Want it to simulate real-time flow
 
 # Rendering waveform *and* FFT with main thread and make look nice
-- [ ] Render the FFT with main thread
+- [ ] Render the FFT with main thread - block based only
 
 # Light Polishing/Optimising
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
@@ -66,6 +66,7 @@ Want it to simulate real-time flow
 		- [ ] Maybe can be used to reduce the buffer capacity as it won't need to hold as much data if the gpu will update the samples/vertex data instead.
 
 # More FFT visuals
+- [ ] Have option of block based or sliding window
 - [ ] FFT Line Graph
 - [ ] Spectrogram
 - [ ] Have UI option to switch between the 3

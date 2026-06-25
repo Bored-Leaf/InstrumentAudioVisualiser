@@ -6,13 +6,14 @@
 template <typename T>
 class CircularBuffer {
 public:
-    CircularBuffer(const int size) 
+    CircularBuffer(const int size, std::string name) 
                             : m_capacity{size}
-                            , m_buffer(size) {}
+                            , m_buffer(size)
+                            , m_name(name) {}
     
     bool write(const std::vector<T> &chunk) {
         if (chunk.size() > m_capacity - m_size) {
-            std::print("Too big to write: {} in available space: {}\n", chunk.size(), m_capacity - m_size);
+            std::print("{} >> Too big to write: {} in available space: {}\n", m_name, chunk.size(), m_capacity - m_size);
             return false;
         }
 
@@ -29,7 +30,7 @@ public:
     
     bool read(std::vector<T> &out, const int count) {
         if (m_size < count) {
-            std::print("Too little to read: {} in occupied space {}\n", count, m_size);
+            std::print("{} >> Too little to read: {} in occupied space {}\n", m_name,  count, m_size);
             return false;
         }
 
@@ -50,6 +51,8 @@ public:
         return m_size;
     }
 private:
+    std::string m_name;
+
     std::vector<T> m_buffer{};
     int m_writeIndex{};
     int m_readIndex{};

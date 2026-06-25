@@ -3,6 +3,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <complex>
 
 #include "shader.h"
 #include "CircularBuffer.h"
@@ -18,7 +19,8 @@ struct Button {
 };
 
 struct AppState {
-    AppState() : buffer(131072){}
+    AppState() : waveformBuffer(131072, "waveformBuffer")
+               , fftBuffer(1024, "fftBuffer") {}
 
     bool isPlaying{false};
     bool shouldLoop{false};
@@ -30,7 +32,8 @@ struct AppState {
 
     std::unique_ptr<WAVReader> WAVFile;
 
-    CircularBuffer<float> buffer;
+    CircularBuffer<float> waveformBuffer;
+    CircularBuffer<std::complex<float>> fftBuffer;
     std::atomic<bool> running;
     std::mutex mtx;
 };
