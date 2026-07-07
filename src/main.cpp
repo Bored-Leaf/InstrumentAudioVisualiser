@@ -51,22 +51,22 @@ int main() {
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
-        760, 30, 0.0F,
-        680, 30, 0.0F,
-        760, 90, 0.0F,
+        760, 570, 0.0F,
+        680, 570, 0.0F,
+        760, 510, 0.0F,
 
-        680, 30, 0.0F,
-        680, 90, 0.0F,
-        760, 90, 0.0F,
+        680, 570, 0.0F,
+        680, 510, 0.0F,
+        760, 510, 0.0F,
 
         // Loop Button
-        760, 120, 0.0F,
-        680, 120, 0.0F,
-        760, 180, 0.0F,
+        760, 480, 0.0F,
+        680, 480, 0.0F,
+        760, 420, 0.0F,
 
-        680, 120, 0.0F,
-        680, 180, 0.0F,
-        760, 180, 0.0F
+        680, 480, 0.0F,
+        680, 420, 0.0F,
+        760, 420, 0.0F
     };
 
     // Play button
@@ -101,7 +101,8 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
-    appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, SCR_HEIGHT, 0.0F);
+
+    appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, 0.0F, SCR_HEIGHT);
 
     std::thread audioThread(audioWorker, std::ref(appState));
     
@@ -231,7 +232,7 @@ void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile) {
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
     glViewport(0, 0, width, height);
 
-    appState.uiProjection = glm::ortho(0.0F, (float)width, (float)height, 0.0F);
+    appState.uiProjection = glm::ortho(0.0F, static_cast<float>(width), 0.0F, static_cast<float>(height));
 }
 
 void processInput(GLFWwindow* window) {
