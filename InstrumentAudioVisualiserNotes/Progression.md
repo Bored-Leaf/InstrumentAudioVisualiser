@@ -51,11 +51,16 @@ Implement opengl in project
 Want it to simulate real-time flow
 
 # Rendering waveform *and* FFT with main thread and make look nice
-- [ ] Render the FFT with main thread - block based only
+- Damn ending up being a whole rendering system/object
+- [ ] Render the FFT and waveform with main thread
+	- [ ] FFT block based only for now
 
 # Light Polishing/Optimising
 - [ ] Matrix stuff for buttons and coordinates for window resizing and keeping aspect ratio of buttons.
-- [ ] Better button icons and effect when hovering mouse over
+- [ ] Better UI
+	- [ ] button icons and effect when hovering mouse over
+	- [ ] window_manager onDrag is now actually when dragging near the split point
+		- [ ] Needs logic in the glfw callback to only call onDrag when initial mouse click was near the split point or something like that
 - [ ] Play the audio file
 	- [ ] Play the actual audio from the file
 	- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
