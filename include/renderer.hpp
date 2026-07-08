@@ -8,13 +8,14 @@
 class Renderer {
 public:
     Renderer() = default;
+    ~Renderer();
 
-    void init();
-
+    void init(const std::vector<float> &initVertexData);
     void update();
-
 private:
     WindowManager windowManager{};
     std::unique_ptr<Visualisation> waveformVis;
     std::unique_ptr<Visualisation> fftVis;
+
+    void cleanup();
 };

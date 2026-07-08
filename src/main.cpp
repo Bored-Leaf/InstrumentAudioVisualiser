@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "constants.hpp"
 #include "waveformUtils.h"
 #include "shader.h"
 #include "FFT.h"
@@ -69,25 +70,29 @@ int main() {
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
-    std::vector<float> startingWaveformVertices{WaveformUtils::wavSamplesToVertices(appState.WAVFile, WAVEFORM_WINDOW, 0)};
-
-    unsigned int waveformVAO{};
-    unsigned int UIVAO{};
+    // TODO: Renderer::init() here
+    // TODO: Send to renderer::init() for initial frame draw to avoid blank screen
+    std::vector<float> initVertexData{WaveformUtils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
+    // TODO: use getVBO/getVAO to use later on
     unsigned int waveformVBO{};
+
+    //unsigned int waveformVAO{};
+    unsigned int UIVAO{};
+    //unsigned int waveformVBO{};
     unsigned int uiButtonsVBO{};
 
-    glGenVertexArrays(1, &waveformVAO);
+    //glGenVertexArrays(1, &waveformVAO);
     glGenVertexArrays(1, &UIVAO);
-    glGenBuffers(1, &waveformVBO);
+    //glGenBuffers(1, &waveformVBO);
     glGenBuffers(1, &uiButtonsVBO);
 
-    glBindVertexArray(waveformVAO);
+    //glBindVertexArray(waveformVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(startingWaveformVertices.size() * sizeof(float)), startingWaveformVertices.data(), GL_DYNAMIC_DRAW);
+    //glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
+    //glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(initVertexData.size() * sizeof(float)), initVertexData.data(), GL_DYNAMIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
-    glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+    //glEnableVertexAttribArray(0);
 
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
@@ -96,7 +101,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
 
-    appState.uiProjection = glm::ortho(0.0F, SCR_WIDTH, 0.0F, SCR_HEIGHT);
+    appState.uiProjection = glm::ortho(0.0F, constants::SCR_WIDTH, 0.0F, constants::SCR_HEIGHT);
 
     std::thread audioThread(audioWorker, std::ref(appState));
     
@@ -144,17 +149,18 @@ int main() {
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Waveform first
+        // TODO: Renderer::draw() here
+        // Waveform
 
-        waveformShader->use();
+        //waveformShader->use();
 
-        glLineWidth(2.0F);
-        glBindVertexArray(waveformVAO);
-        glDrawArrays(GL_LINE_STRIP, 0, WAVEFORM_WINDOW);
+        //glLineWidth(2.0F);
+        //glBindVertexArray(waveformVAO);
+        //glDrawArrays(GL_LINE_STRIP, 0, WAVEFORM_WINDOW);
 
-        // FFT second
+        // FFT
 
-        // UI last
+        // UI
         appState.UIShader->use();
         appState.UIShader->setMat4("projection", appState.uiProjection);
 
@@ -181,9 +187,10 @@ int main() {
     appState.running = false;
     audioThread.join();
 
-    glDeleteVertexArrays(1, &waveformVAO);
-    glDeleteBuffers(1, &waveformVBO);
-    waveformShader->deleteShader();
+    // TODO: Renderer::cleanup() here
+    //glDeleteVertexArrays(1, &waveformVAO);
+    //glDeleteBuffers(1, &waveformVBO);
+    //waveformShader->deleteShader();
     appState.UIShader->deleteShader();
 
     glfwTerminate();

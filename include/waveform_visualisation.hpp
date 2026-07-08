@@ -7,9 +7,12 @@
 
 class WaveformVisualisation : public Visualisation {
 public:
+    void init(const std::vector<float> &initVertexData) override;
     void draw(const glm::mat4 &projection) override;
+    void cleanup() override;
 
-    void init() override;
+    [[nodiscard]] unsigned int getVBO() const override;
+    [[nodiscard]] unsigned int getVAO() const override;
 
 private:
     unsigned int m_VBO{};
