@@ -26,12 +26,6 @@ void audioWorker(AppState& state);
 
 void FFTTesting();
 
-constexpr float SCR_WIDTH{800.0F};
-constexpr float SCR_HEIGHT{600.0F};
-constexpr const char* WINDOW_NAME{"Instrument Audio Visualiser"};
-constexpr int WAVEFORM_WINDOW{441 * 30};
-constexpr int FFT_WINDOW{1024};
-
 AppState appState;
 
 int main() {
@@ -125,7 +119,7 @@ int main() {
         if (appState.isPlaying) {
             std::vector<float> waveformVerticies{};
             std::vector<std::complex<float>> fftOutput{};
-            int sampleAmount{WAVEFORM_WINDOW};
+            int sampleAmount{constants::WAVEFORM_WINDOW};
 
             {   // waveform
                 std::lock_guard<std::mutex> lock(appState.mtx);
@@ -139,7 +133,7 @@ int main() {
 
             {   // fft
                 std::lock_guard<std::mutex> lock(appState.mtx);
-                bool success{appState.fftBuffer.read(fftOutput, FFT_WINDOW)};
+                bool success{appState.fftBuffer.read(fftOutput, constants::FFT_WINDOW)};
                 if (success) {
                     std::print("AYAYAYYAYAYA READING GOOD\n");
                 }
@@ -207,7 +201,7 @@ GLFWwindow* setupGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT), WINDOW_NAME, nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(static_cast<int>(constants::SCR_WIDTH), static_cast<int>(constants::SCR_HEIGHT), constants::WINDOW_NAME, nullptr, nullptr);
     if (window == nullptr) {
         std::print(stderr, "Failed to create GLFW Window");
         glfwTerminate();
@@ -299,7 +293,7 @@ void audioWorker(AppState& state) {
             totalOffset += offset;
 
             // Generate and send vertex data to GPU
-            int sampleAmount{WAVEFORM_WINDOW};
+            int sampleAmount{constants::WAVEFORM_WINDOW};
             std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(state.WAVFile, sampleAmount, offset);
             
             if (fractionalLoss > 1.0F) {
@@ -318,20 +312,20 @@ void audioWorker(AppState& state) {
             std::vector<float> samplesToAdd{state.WAVFile->getSamples(sampleRate * dtTime)};
             newSamples.insert(newSamples.begin(), samplesToAdd.begin(), samplesToAdd.end());
 
-            if (newSamples.size() >= FFT_WINDOW) {
-                fftInput.insert(fftInput.begin(), newSamples.begin(), newSamples.begin() + FFT_WINDOW);
+            if (newSamples.size() >= constants::FFT_WINDOW) {
+                fftInput.insert(fftInput.begin(), newSamples.begin(), newSamples.begin() + constants::FFT_WINDOW);
                 {
                     std::lock_guard<std::mutex> lock(state.mtx);
                     bool success(state.fftBuffer.write(fft(fftInput)));
                     if (!success) {
                         std::print("fft computation has too many elements in input. input should only have {} elements "
-                                "not {}!!\n", FFT_WINDOW, fftInput.size());
+                                "not {}!!\n", constants::FFT_WINDOW, fftInput.size());
                     } else {
                         std::print("YAYAYAYAA WRITING GOOD\n");
                     }
                 }
-                fftInput.erase(fftInput.begin(), fftInput.begin() + FFT_WINDOW);
-                newSamples.erase(newSamples.begin(), newSamples.begin() + FFT_WINDOW);
+                fftInput.erase(fftInput.begin(), fftInput.begin() + constants::FFT_WINDOW);
+                newSamples.erase(newSamples.begin(), newSamples.begin() + constants::FFT_WINDOW);
             }
         }
 
