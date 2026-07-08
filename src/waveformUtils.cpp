@@ -74,7 +74,7 @@ void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std
         } else {
             wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, 0.0F, 0});
         }
-        }
+    }
 }
 
 void WaveformUtils::updateWavVerticies(const unsigned int VBO, const std::vector<float> &waveformVerticies) {
