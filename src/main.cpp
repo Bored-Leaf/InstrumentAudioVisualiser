@@ -150,12 +150,17 @@ int main() {
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Waveform first
+
         waveformShader->use();
 
         glLineWidth(2.0F);
         glBindVertexArray(waveformVAO);
         glDrawArrays(GL_LINE_STRIP, 0, WAVEFORM_WINDOW);
 
+        // FFT second
+
+        // UI last
         appState.UIShader->use();
         appState.UIShader->setMat4("projection", appState.uiProjection);
 
@@ -337,6 +342,7 @@ void audioWorker(AppState& state) {
     }
 }
 
+// Remove when verified fft values and rendering is correct
 void FFTTesting() {
     std::print("FFT testing");
 
