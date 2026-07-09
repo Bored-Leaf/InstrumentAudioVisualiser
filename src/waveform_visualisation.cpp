@@ -1,5 +1,9 @@
 #include "waveform_visualisation.hpp"
 #include "constants.hpp"
+#include "shader.h"
+
+WaveformVisualisation::WaveformVisualisation(const char *vertPath, const char *fragPath) 
+    : m_shaders(Shader{vertPath, fragPath}){};
 
 void WaveformVisualisation::init(const std::vector<float> &initVertexData) {
     glGenVertexArrays(1, &m_VAO);

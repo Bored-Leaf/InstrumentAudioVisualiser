@@ -16,6 +16,9 @@
 #include "CircularBuffer.h"
 #include "AppState.h"
 
+#include "renderer.hpp"
+#include "waveform_visualisation.hpp"
+
 GLFWwindow* setupGLFW();
 void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
 
@@ -27,6 +30,7 @@ void audioWorker(AppState& state);
 
 void FFTTesting();
 
+// TODO: use glfwGetWindowUserPointer to pass it instead of global struct
 AppState appState;
 
 int main() {
@@ -38,10 +42,13 @@ int main() {
         return -1;
     }
 
+    WaveformVisualisation waveformVis("shaders/triangle.vert", "shaders/triangleFrag.frag");
+    Renderer renderer{waveformVis};
+
     //std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
 
-    auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
+    //auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
@@ -70,29 +77,19 @@ int main() {
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
-    // TODO: Renderer::init() here
-    // TODO: Send to renderer::init() for initial frame draw to avoid blank screen
     std::vector<float> initVertexData{WaveformUtils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
-    // TODO: use getVBO/getVAO to use later on
-    unsigned int waveformVBO{};
 
-    //unsigned int waveformVAO{};
+    // use glfwGetWindowUserPointer to pass to callback functions for onResize and onDrag without a global object
+    renderer.init(initVertexData);
+    unsigned int waveformVBO{renderer.getWaveformVis()->getVBO()};
+
     unsigned int UIVAO{};
-    //unsigned int waveformVBO{};
     unsigned int uiButtonsVBO{};
 
-    //glGenVertexArrays(1, &waveformVAO);
     glGenVertexArrays(1, &UIVAO);
-    //glGenBuffers(1, &waveformVBO);
     glGenBuffers(1, &uiButtonsVBO);
 
-    //glBindVertexArray(waveformVAO);
 
-    //glBindBuffer(GL_ARRAY_BUFFER, waveformVBO);
-    //glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(initVertexData.size() * sizeof(float)), initVertexData.data(), GL_DYNAMIC_DRAW);
-    
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
-    //glEnableVertexAttribArray(0);
 
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
@@ -105,20 +102,10 @@ int main() {
 
     std::thread audioThread(audioWorker, std::ref(appState));
     
-    float currentFrame{};
-    float previousFrame{};
-    uint32_t sampleRate{appState.WAVFile->getSampleRate()};
-
     appState.running = true;
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
 
-        // Delta time
-        currentFrame = static_cast<float>(glfwGetTime());
-        float dtTime = currentFrame - previousFrame;
-        previousFrame = currentFrame;
-        
-        
         // UI functionality
         // BUG: Only seems to work on Ouch-2.wav
         if (appState.isPlaying) {
@@ -149,16 +136,7 @@ int main() {
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // TODO: Renderer::draw() here
-        // Waveform
-
-        //waveformShader->use();
-
-        //glLineWidth(2.0F);
-        //glBindVertexArray(waveformVAO);
-        //glDrawArrays(GL_LINE_STRIP, 0, WAVEFORM_WINDOW);
-
-        // FFT
+        renderer.update();
 
         // UI
         appState.UIShader->use();
@@ -187,10 +165,7 @@ int main() {
     appState.running = false;
     audioThread.join();
 
-    // TODO: Renderer::cleanup() here
-    //glDeleteVertexArrays(1, &waveformVAO);
-    //glDeleteBuffers(1, &waveformVBO);
-    //waveformShader->deleteShader();
+    // TODO: Renderer::cleanup() is called on destructor
     appState.UIShader->deleteShader();
 
     glfwTerminate();
@@ -263,6 +238,7 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
             }
 
         // POLISH: Use uniforms for when mouse is hovering over the button.
+        
     }
 }
 

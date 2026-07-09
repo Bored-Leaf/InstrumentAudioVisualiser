@@ -1,12 +1,12 @@
 #pragma once
 
-#include <memory>
-
 #include "visualisation.hpp"
 #include "shader.h"
 
 class WaveformVisualisation : public Visualisation {
 public:
+    WaveformVisualisation(const char *vertPath, const char *fragPath);
+
     void init(const std::vector<float> &initVertexData) override;
     void draw(const glm::mat4 &projection) override;
     void cleanup() override;

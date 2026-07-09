@@ -1,18 +1,37 @@
 #include "renderer.hpp"
+#include "constants.hpp"
+#include "visualisation.hpp"
+#include "waveform_visualisation.hpp"
+ 
+Renderer::Renderer(WaveformVisualisation waveformVis)
+    : m_waveformVis(std::make_unique<WaveformVisualisation>(waveformVis)) { }
 
 Renderer::~Renderer() {
     cleanup();
 }
 
 void Renderer::init(const std::vector<float> &initVertexData) {
-    waveformVis->init(initVertexData);
+    m_waveformVis->init(initVertexData);
+    m_windowManager.onResize(constants::SCR_WIDTH, constants::SCR_HEIGHT);
 }
 
 void Renderer::update() {
-    //NEXT: Need way to get projection from regions
-    //waveformVis->draw();
+    m_waveformVis->draw(m_windowManager.getWaveformRegion().getProjection());
+}
+
+void Renderer::onResize(const int width, const int height) {
+    m_windowManager.onResize(width, height);
+}
+
+void Renderer::onDrag(const double mouseY) {
+    m_windowManager.onDrag(mouseY);
+}
+
+const Visualisation* Renderer::getWaveformVis() const {
+    assert(m_waveformVis != nullptr && "m_waveformVis is a nullptr");
+    return m_waveformVis.get();
 }
 
 void Renderer::cleanup() {
-    waveformVis->cleanup();
+    m_waveformVis->cleanup();
 }
