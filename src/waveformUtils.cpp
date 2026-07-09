@@ -1,3 +1,4 @@
+#include "constants.hpp"
 #include <waveformUtils.h>
 
 #include <glad/glad.h>
@@ -63,16 +64,19 @@ std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAV
 }
 
 void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samplesToUse, size_t amount) {
-    float normalised_x{};
+    // NEXT: waveform looks stretched
     for (size_t i = 0;i < amount;i++) {
-        normalised_x = (amount > 1)
-            ? (2.0F * static_cast<float>(i) / (amount - 1)) -1.0F
-            : 0.0F;
-        
+        float x{(amount > 1)
+            ? (static_cast<float>(constants::SCR_WIDTH) * static_cast<float>(i) / (amount - 1))
+            : 0.0F};
         if (i < samplesToUse.size()) {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, samplesToUse[i], 0});
+            float y{(samplesToUse[i] > -1)
+            ? (samplesToUse[i] + 1.0F) * (constants::SCR_HEIGHT / 2.0F)
+            : 0.0F};
+            float z{0};
+            wavVectorToFill.insert(wavVectorToFill.end(), {x, y, z});
         } else {
-            wavVectorToFill.insert(wavVectorToFill.end(), {normalised_x, 0.0F, 0});
+            wavVectorToFill.insert(wavVectorToFill.end(), {x, 0.0F, 0.0F});
         }
     }
 }
