@@ -1,4 +1,3 @@
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <print>
@@ -11,7 +10,6 @@
 
 #include "constants.hpp"
 #include "waveformUtils.h"
-#include "shader.h"
 #include "FFT.h"
 #include "AppState.h"
 
