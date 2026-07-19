@@ -5,10 +5,8 @@
 class Region {
 public:
 
-    void setBounds(float top, float bottom, float left, float right);
-
-    [[nodiscard]] glm::mat4 getProjection() const;
-
+    void setBounds(float left, float right, float bottom, float top);
+    void applyViewport() const;
 private:
     float m_top{};
     float m_bottom{};    
@@ -16,6 +14,4 @@ private:
     float m_right{};
 
     glm::mat4 m_projection{};
-
-    void recalculateProjection();
 };

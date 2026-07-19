@@ -130,6 +130,8 @@ int main() {
         renderer.update();
 
         // UI
+        // obviously in the ui implementation
+        glViewport(0, 0, 800, 600);
         appState.UIShader->use();
         appState.UIShader->setMat4("projection", appState.uiProjection);
 

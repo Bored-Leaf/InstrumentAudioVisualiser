@@ -14,8 +14,8 @@ public:
     void init(const std::vector<float> &initVertexData);
     void update();
 
-    void onResize(const int width, const int height);
-    void onDrag(const double mouseY);
+    void onResize(int width, int height);
+    void onDrag(double mouseY);
 
     [[nodiscard]] const Visualisation* getWaveformVis() const;
 private:

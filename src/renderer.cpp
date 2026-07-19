@@ -16,7 +16,8 @@ void Renderer::init(const std::vector<float> &initVertexData) {
 }
 
 void Renderer::update() {
-    m_waveformVis->draw(m_windowManager.getWaveformRegion().getProjection());
+    m_windowManager.getWaveformRegion().applyViewport();
+    m_waveformVis->draw(m_windowManager.getProjection());
 }
 
 void Renderer::onResize(const int width, const int height) {

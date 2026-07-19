@@ -64,7 +64,7 @@ std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAV
 }
 
 void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samplesToUse, size_t amount) {
-    // NEXT: waveform looks stretched
+    // BUG: weird line
     for (size_t i = 0;i < amount;i++) {
         float x{(amount > 1)
             ? (static_cast<float>(constants::SCR_WIDTH) * static_cast<float>(i) / (amount - 1))
