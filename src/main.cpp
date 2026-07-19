@@ -13,14 +13,12 @@
 #include "waveformUtils.h"
 #include "shader.h"
 #include "FFT.h"
-#include "CircularBuffer.h"
 #include "AppState.h"
 
 #include "renderer.hpp"
 #include "waveform_visualisation.hpp"
 
 GLFWwindow* setupGLFW();
-void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile);
 
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -45,10 +43,7 @@ int main() {
     WaveformVisualisation waveformVis("shaders/triangle.vert", "shaders/triangleFrag.frag");
     Renderer renderer{waveformVis};
 
-    //std::unique_ptr<WAVReader> WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
-
-    //auto waveformShader = std::make_unique<Shader>("shaders/triangle.vert", "shaders/triangleFrag.frag");
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
@@ -88,8 +83,6 @@ int main() {
 
     glGenVertexArrays(1, &UIVAO);
     glGenBuffers(1, &uiButtonsVBO);
-
-
 
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
@@ -201,13 +194,6 @@ GLFWwindow* setupGLFW() {
     }
 
     return window;
-}
-
-void printWavFileInfo(const std::unique_ptr<WAVReader> &WAVFile) {
-    std::cout << "WAV file sampleRate: " << WAVFile->getSampleRate() << '\n';
-    std::cout << "WAV file channels: " << WAVFile->getChannels() << '\n';
-    std::cout << "WAV file bitsPerSample: " << WAVFile->getBitsPerSample() << '\n';
-    WaveformUtils::printWaveformTerminal(WAVFile);
 }
 
 void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
