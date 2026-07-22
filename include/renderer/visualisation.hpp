@@ -5,6 +5,7 @@
 class Visualisation {
 public:
     virtual void draw(const glm::mat4 &projection) = 0;
+    //CLEANUP: Not all implementations need inintVertexData
     virtual void init(const std::vector<float> &initVertexData) = 0;
     virtual void cleanup() = 0;
 

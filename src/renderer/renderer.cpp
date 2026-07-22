@@ -1,7 +1,7 @@
-#include "renderer.hpp"
+#include "renderer/renderer.hpp"
 #include "constants.hpp"
-#include "visualisation.hpp"
-#include "waveform_visualisation.hpp"
+#include "renderer/visualisation.hpp"
+#include "renderer/waveform_visualisation.hpp"
  
 Renderer::Renderer(WaveformVisualisation waveformVis)
     : m_waveformVis(std::make_unique<WaveformVisualisation>(waveformVis)) { }
@@ -16,6 +16,9 @@ void Renderer::init(const std::vector<float> &initVertexData) {
 }
 
 void Renderer::update() {
+    glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     m_windowManager.getWaveformRegion().applyViewport();
     m_waveformVis->draw(m_windowManager.getProjection());
 }

@@ -13,8 +13,8 @@
 #include "FFT.h"
 #include "AppState.h"
 
-#include "renderer.hpp"
-#include "waveform_visualisation.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/waveform_visualisation.hpp"
 
 GLFWwindow* setupGLFW();
 
@@ -42,6 +42,7 @@ int main() {
     Renderer renderer{waveformVis};
 
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
+    // Move to UI implementation
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
     std::vector<float> uiButtonsVerticies{
@@ -123,9 +124,6 @@ int main() {
                 
             }
         }
-        
-        glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         renderer.update();
 

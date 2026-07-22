@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visualisation.hpp"
+#include "renderer/visualisation.hpp"
 #include "shader.h"
 
 class WaveformVisualisation : public Visualisation {
