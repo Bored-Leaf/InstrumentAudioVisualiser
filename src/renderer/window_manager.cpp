@@ -17,6 +17,10 @@ const Region& WindowManager::getWaveformRegion() const {
     return m_waveformWindow;
 }
 
+const Region& WindowManager::getFFTRegon() const {
+    return m_fftWindow;
+}
+
 const glm::mat4& WindowManager::getProjection() const {
     return m_projection;
 }
@@ -29,5 +33,5 @@ void WindowManager::updateLayout() {
     float windowSplit{m_windowHeight * m_horizontalSplitRatio};
 
     m_waveformWindow.setBounds(windowLeft, windowRight, windowSplit, windowTop);
-    //m_fftWindow.setBounds(windowLeft, windowRight, windowBottom, windowSplit);
+    m_fftWindow.setBounds(windowLeft, windowRight, windowBottom, windowSplit);
 }

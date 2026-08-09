@@ -38,8 +38,9 @@ int main() {
         return -1;
     }
 
-    WaveformVisualisation waveformVis("shaders/triangle.vert", "shaders/triangleFrag.frag");
-    Renderer renderer{waveformVis};
+    WaveformVisualisation waveformVis("shaders/waveformVert.vert", "shaders/waveformFrag.frag");
+    FFTVisualisation fftVis("shaders/fftVert.vert", "shaders/fftFrag.frag");
+    Renderer renderer{waveformVis, fftVis};
 
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
     // Move to UI implementation
@@ -73,7 +74,7 @@ int main() {
 
     std::vector<float> initVertexData{WaveformUtils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
 
-    // use glfwGetWindowUserPointer to pass to callback functions for onResize and onDrag without a global object
+    // TODO: use glfwGetWindowUserPointer to pass to callback functions for onResize and onDrag without a global object
     renderer.init(initVertexData);
     unsigned int waveformVBO{renderer.getWaveformVis()->getVBO()};
 
@@ -109,6 +110,7 @@ int main() {
                 std::lock_guard<std::mutex> lock(appState.mtx);
                 bool success{appState.waveformBuffer.read(waveformVerticies, sampleAmount * 3)};
                 if (success) {
+                    // CLEANUP: move to waveformVis or something nice
                     WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
                 } else {
                     //std::print("Buffer is full, won't write\n");
@@ -173,6 +175,8 @@ GLFWwindow* setupGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(static_cast<int>(constants::SCR_WIDTH), static_cast<int>(constants::SCR_HEIGHT), constants::WINDOW_NAME, nullptr, nullptr);
     if (window == nullptr) {

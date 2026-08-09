@@ -2,13 +2,15 @@
 
 #include <memory>
 
+#include "fft_visualisation.hpp"
 #include "window_manager.hpp"
 #include "visualisation.hpp"
-#include "waveform_visualisation.hpp"
+#include "renderer/waveform_visualisation.hpp"
+#include "renderer/fft_visualisation.hpp"
 
 class Renderer {
 public:
-    Renderer(WaveformVisualisation waveformVis);
+    Renderer(const WaveformVisualisation &waveformVis, const FFTVisualisation &fftVis);
     ~Renderer();
 
     void init(const std::vector<float> &initVertexData);
@@ -18,6 +20,7 @@ public:
     void onDrag(double mouseY);
 
     [[nodiscard]] const Visualisation* getWaveformVis() const;
+    [[nodiscard]] const Visualisation* getFFTVis() const;
 private:
     WindowManager m_windowManager{};
     std::unique_ptr<Visualisation> m_waveformVis;

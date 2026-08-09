@@ -65,13 +65,15 @@ std::vector<float> WaveformUtils::wavSamplesToVertices(const std::unique_ptr<WAV
 
 void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samplesToUse, size_t amount) {
     // BUG: weird line
+    constexpr float amplitude{2.0F};
+
     for (size_t i = 0;i < amount;i++) {
         float x{(amount > 1)
             ? (static_cast<float>(constants::SCR_WIDTH) * static_cast<float>(i) / (amount - 1))
             : 0.0F};
         if (i < samplesToUse.size()) {
             float y{(samplesToUse[i] > -1)
-            ? (samplesToUse[i] + 1.0F) * (constants::SCR_HEIGHT / 2.0F)
+            ? ((samplesToUse[i] * amplitude) + 1.0F) * (constants::SCR_HEIGHT / 2.0F)
             : 0.0F};
             float z{0};
             wavVectorToFill.insert(wavVectorToFill.end(), {x, y, z});
@@ -83,5 +85,5 @@ void WaveformUtils::fillwavVector(std::vector<float> &wavVectorToFill, const std
 
 void WaveformUtils::updateWavVerticies(const unsigned int VBO, const std::vector<float> &waveformVerticies) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, waveformVerticies.size() * sizeof(float), waveformVerticies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, waveformVerticies.size() * sizeof(float), waveformVerticies.data(), GL_DYNAMIC_DRAW);
 }
