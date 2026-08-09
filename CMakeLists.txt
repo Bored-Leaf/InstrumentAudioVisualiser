@@ -18,7 +18,7 @@ add_custom_target(CopyShaders ALL
     COMMENT "Copying shaders to build directory..."
 )
 
-file(GLOB SOURCE_FILES "src/*.cpp" "src/*.c" "learning/*.cpp")
+file(GLOB SOURCE_FILES "src/*.cpp" "src/*.c" "src/renderer/*.cpp" "learning/*.cpp")
 
 add_executable(
     InstrumentAudioVisualiser
@@ -32,7 +32,8 @@ endif()
 
 target_include_directories(InstrumentAudioVisualiser PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/learning 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glm
 )
