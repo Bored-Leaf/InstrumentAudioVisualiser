@@ -1,4 +1,6 @@
 #include <print>
+#include <algorithm>
+#include <random>
 
 #include "renderer/fft_visualisation.hpp"
 #include "constants.hpp"
@@ -13,12 +15,9 @@ void FFTVisualisation::init(const std::vector<float> &initVertexData) {
 
     glBindVertexArray(m_VAO);
 
-    // NEXT: Work out how to structure the vertex data in a vector
     std::vector<float> initBarVertexData{};
 
     createBars(initBarVertexData);
-
-    std::print("{}\n", initBarVertexData.size());
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(initBarVertexData.size() * sizeof(float)), initBarVertexData.data(), GL_DYNAMIC_DRAW);
@@ -27,21 +26,35 @@ void FFTVisualisation::init(const std::vector<float> &initVertexData) {
     glEnableVertexAttribArray(0);
 }
 
-void FFTVisualisation::createBars(std::vector<float> &initBarVertexData) const {
-    // Make all the bars visible
-    float barWidth{constants::SCR_WIDTH / (m_numBins / 50)};
-    std::print("{}\n", barWidth);
-    float maxBarHeight{constants::SCR_HEIGHT * 0.8F};
-    float barBetweenSpace{0};
+void FFTVisualisation::createBars(std::vector<float> &barVertexData) const {
+    float barWidth{constants::SCR_WIDTH / m_numBins};
+    // TODO add bar space functionality
+    // float spaceBetweenBars{0};
 
-    float TEMP_HEIGHT{maxBarHeight};
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) - (barWidth / 2), 0, 0});
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) + (barWidth / 2), TEMP_HEIGHT, 0});
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) - (barWidth / 2), TEMP_HEIGHT, 0});
+    // temp to get random heights
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> distr(0.0F, constants::SCR_HEIGHT * 0.8F);
 
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) - (barWidth / 2), 0, 0});
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) + (barWidth / 2), 0, 0});
-    initBarVertexData.insert(initBarVertexData.end(), {(constants::SCR_WIDTH / 2) + (barWidth / 2), TEMP_HEIGHT, 0});
+    for (int currentbar = 1;currentbar <= m_numBins;currentbar++) {
+        float left{barWidth * (static_cast<float>(currentbar) - 1)};
+        float right{barWidth * static_cast<float>(currentbar)};
+        float bottom{0};
+        // TODO make fft amplitude outputs
+        float top{distr(gen)};
+
+        std::vector<float> bar{createBar(left, right, bottom, top)};
+        barVertexData.insert(barVertexData.end(), bar.begin(), bar.end());
+    }
+}
+
+std::vector<float> FFTVisualisation::createBar(const float left, const float right, const float bottom, const float top) const {
+    return {left, bottom, 0,
+            right, top, 0,
+            left, top, 0,
+            left, bottom, 0,
+            right, bottom, 0,
+            right, top, 0};
 }
 
 void FFTVisualisation::draw(const glm::mat4 &projection) {

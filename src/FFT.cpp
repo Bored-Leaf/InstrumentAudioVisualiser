@@ -3,6 +3,7 @@
 #include "FFT.h"
 
 std::vector<std::complex<float>> fft(std::vector<std::complex<float>> x) {
+    // TODO Normalise output to 0 and 1
     int n = x.size();
 
     // Base case

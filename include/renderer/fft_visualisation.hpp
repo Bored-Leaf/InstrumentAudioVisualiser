@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 #include "renderer/visualisation.hpp"
 #include "shader.h"
@@ -24,5 +25,6 @@ private:
     // TODO: Make number of bins able to change at runtime
     int m_numBins{(constants::FFT_WINDOW / 2) + 1};
 
-    void createBars(std::vector<float> &initBarVertexData) const ;
+    void createBars(std::vector<float> &barVertexData) const;
+    [[nodiscard]] std::vector<float> createBar(float left, float right, float bottom, float top) const;
 };
