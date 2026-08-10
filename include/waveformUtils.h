@@ -3,7 +3,6 @@
 #include <vector>
 #include <memory>
 #include <WAVReader.h>
-#include <print>
 
 namespace WaveformUtils {
     void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
