@@ -247,7 +247,6 @@ void audioWorker(AppState& state) {
         previousFrame = currentFrame;
         
         // UI functionality
-        // BUG: Only seems to work on Ouch-2.wav
         if (totalOffset > state.WAVFile->getTotalSampleCount()) {
             if(!state.shouldLoop) {
                 state.isPlaying = false;
