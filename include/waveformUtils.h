@@ -4,7 +4,7 @@
 #include <memory>
 #include <WAVReader.h>
 
-namespace WaveformUtils {
+namespace waveform_utils {
     void printWaveformTerminal(const std::unique_ptr<WAVReader>& WAVFile);
     std::vector<float> wavSamplesToVertices(const std::unique_ptr<WAVReader> &WAVFile, int sampleAmount, int samplesToAdvance);
     void fillwavVector(std::vector<float> &wavVectorToFill, const std::vector<float> &samples, size_t amount);
