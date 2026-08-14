@@ -10,6 +10,7 @@
 
 #include "constants.hpp"
 #include "waveformUtils.h"
+#include "fft_utils.hpp"
 #include "FFT.h"
 #include "AppState.h"
 
@@ -24,12 +25,13 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 
 void audioWorker(AppState& state);
 
-void FFTTesting();
+void FFTFloorCeilingTesting(std::unique_ptr<WAVReader> &wavFile);
 
 // TODO: use glfwGetWindowUserPointer to pass it instead of global struct
 AppState appState;
 
 int main() {
+
     GLFWwindow* window{setupGLFW()};
     if (window) {
         std::print("GLFW Window setup successful\n");
@@ -43,6 +45,8 @@ int main() {
     Renderer renderer{waveformVis, fftVis};
 
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
+    // FFTFloorCeilingTesting(appState.WAVFile);
+
     // Move to UI implementation
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
 
@@ -72,11 +76,15 @@ int main() {
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
-    std::vector<float> initVertexData{WaveformUtils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
+    std::vector<float> initWaveformVertexData{waveform_utils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
+    std::vector<float> initBarVertexData{};
+    std::vector<std::complex<float>> initFFTZeroValues(constants::FFT_WINDOW);
+    fft_utils::createBars(initBarVertexData, initFFTZeroValues);
 
     // TODO: use glfwGetWindowUserPointer to pass to callback functions for onResize and onDrag without a global object
-    renderer.init(initVertexData);
+    renderer.init(initWaveformVertexData, initBarVertexData);
     unsigned int waveformVBO{renderer.getWaveformVis()->getVBO()};
+    unsigned int fftVBO{renderer.getFFTVis()->getVBO()};
 
     unsigned int UIVAO{};
     unsigned int uiButtonsVBO{};
@@ -111,7 +119,7 @@ int main() {
                 bool success{appState.waveformBuffer.read(waveformVerticies, sampleAmount * 3)};
                 if (success) {
                     // CLEANUP: move to waveformVis or something nice
-                    WaveformUtils::updateWavVerticies(waveformVBO, waveformVerticies);
+                    waveform_utils::updateWavVerticies(waveformVBO, waveformVerticies);
                 } else {
                     //std::print("Buffer is full, won't write\n");
                 }
@@ -121,7 +129,11 @@ int main() {
                 std::lock_guard<std::mutex> lock(appState.mtx);
                 bool success{appState.fftBuffer.read(fftOutput, constants::FFT_WINDOW)};
                 if (success) {
-                    std::print("AYAYAYYAYAYA READING GOOD\n");
+                    // TODO: Refactor when normalise actually normalises
+                    // CLEANUP: move to fftVis or something nice
+                    std::vector<float> barData{};
+                    fft_utils::createBars(barData, fftOutput);
+                    fft_utils::updateFFTVertices(fftVBO, barData);
                 }
                 
             }
@@ -234,12 +246,17 @@ void audioWorker(AppState& state) {
     float currentFrame{};
     float previousFrame{};
 
+    // waveform
     float       fractionalLoss{};
     uint        totalOffset{};
     uint32_t    sampleRate{state.WAVFile->getSampleRate()};
 
+    // fft
     std::vector<std::complex<float>>    fftInput{};
     std::vector<float>                  newSamples{};
+
+    // make call when fft_window size changes
+    fft::generateHannCoefficients(constants::FFT_WINDOW);
 
     while(state.running) {
         currentFrame = static_cast<float>(glfwGetTime());
@@ -250,6 +267,7 @@ void audioWorker(AppState& state) {
         if (totalOffset > state.WAVFile->getTotalSampleCount()) {
             if(!state.shouldLoop) {
                 state.isPlaying = false;
+                std::print("{}\n", newSamples.size());
             }
             totalOffset = 0;
         }
@@ -264,7 +282,7 @@ void audioWorker(AppState& state) {
 
             // Generate and send vertex data to GPU
             int sampleAmount{constants::WAVEFORM_WINDOW};
-            std::vector<float> waveformVerticies = WaveformUtils::wavSamplesToVertices(state.WAVFile, sampleAmount, offset);
+            std::vector<float> waveformVerticies = waveform_utils::wavSamplesToVertices(state.WAVFile, sampleAmount, offset);
             
             if (fractionalLoss > 1.0F) {
                 fractionalLoss -= 1;
@@ -283,15 +301,17 @@ void audioWorker(AppState& state) {
             newSamples.insert(newSamples.begin(), samplesToAdd.begin(), samplesToAdd.end());
 
             if (newSamples.size() >= constants::FFT_WINDOW) {
-                fftInput.insert(fftInput.begin(), newSamples.begin(), newSamples.begin() + constants::FFT_WINDOW);
+                std::vector<float> newSamplesToAdd{};
+                // CLEANUP: What the hell, clean this up, a billion vectors for one thing jesus
+                newSamplesToAdd.insert(newSamplesToAdd.begin(), newSamples.begin(), newSamples.begin() + constants::FFT_WINDOW);
+                fft::applyHannWindow(newSamplesToAdd);
+                fftInput.insert(fftInput.begin(), newSamplesToAdd.begin(), newSamplesToAdd.begin() + constants::FFT_WINDOW);
                 {
                     std::lock_guard<std::mutex> lock(state.mtx);
-                    bool success(state.fftBuffer.write(fft(fftInput)));
+                    bool success(state.fftBuffer.write(fft::compute(fftInput)));
                     if (!success) {
                         std::print("fft computation has too many elements in input. input should only have {} elements "
                                 "not {}!!\n", constants::FFT_WINDOW, fftInput.size());
-                    } else {
-                        std::print("YAYAYAYAA WRITING GOOD\n");
                     }
                 }
                 fftInput.erase(fftInput.begin(), fftInput.begin() + constants::FFT_WINDOW);
@@ -306,32 +326,26 @@ void audioWorker(AppState& state) {
     }
 }
 
-// Remove when verified fft values and rendering is correct
-void FFTTesting() {
-    std::print("FFT testing");
+void FFTFloorCeilingTesting(std::unique_ptr<WAVReader> &wavFile) {
+    std::println("FFT testing");
+    float max{};
+    float min{};
+    for (int i = 0; i < wavFile->getTotalSampleCount();i += wavFile->getSamplesOffset(1024, i).size()) {
+        if (wavFile->getTotalSampleCount() - i < 1024) continue;
+        std::vector<float> samples{appState.WAVFile->getSamplesOffset(1024, i)};
+        std::vector<std::complex<float>> input{};
+        input.assign(samples.begin(), samples.end());
+        std::vector<std::complex<float>> output{fft::compute(input)};
 
-    std::vector<float> samples(1024);
-    for (int i = 0;i < 1024;i++) {
-        float t = static_cast<float>(i) / 44100;
-        samples[i] = sin(2 * std::numbers::pi * 100 * t) + sin(2 * std::numbers::pi * 1000 * t);
+        float fakemax{};
+        float fakemin{};
+        for (auto &num : output) {
+            fakemax = std::max(std::abs(num), fakemax);
+            fakemin = std::min(std::abs(num), fakemin);
+        }
+        max = std::max(fakemax, max);
+        min = std::min(fakemin, min);
     }
-    std::vector<std::complex<float>> fftInput(samples.begin(), samples.end());
-    std::vector<std::complex<float>> fftResult{fft(fftInput)};
-    std::print("Bins 0 - 6\n");
-    std::print("{}\n", std::abs(fftResult[0]));
-    std::print("{}\n", std::abs(fftResult[1]));
-    std::print("{}\n", std::abs(fftResult[2]));
-    std::print("{}\n", std::abs(fftResult[3]));
-    std::print("{}\n", std::abs(fftResult[4]));
-    std::print("{}\n", std::abs(fftResult[5]));
-    std::print("{}\n", std::abs(fftResult[6]));
-
-    std::print("Bins 20 - 26\n");
-    std::print("{}\n", std::abs(fftResult[20]));
-    std::print("{}\n", std::abs(fftResult[21]));
-    std::print("{}\n", std::abs(fftResult[22]));
-    std::print("{}\n", std::abs(fftResult[23]));
-    std::print("{}\n", std::abs(fftResult[24]));
-    std::print("{}\n", std::abs(fftResult[25]));
-    std::print("{}\n", std::abs(fftResult[26]));
+    std::println("largest bin height {}", max);
+    std::println("smallest bin height {}", min);
 }
