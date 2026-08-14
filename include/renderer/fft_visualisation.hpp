@@ -9,7 +9,7 @@ class FFTVisualisation : public Visualisation {
 public:
     FFTVisualisation(const char *vertPath, const char *fragPath);
 
-    void init(const std::vector<float> &initVertexData) override;
+    void init(const std::vector<float> &initBarVertexData) override;
     void draw(const glm::mat4 &projection) override;
     void cleanup() override;
 
@@ -24,7 +24,4 @@ private:
 
     // TODO: Make number of bins able to change at runtime
     int m_numBins{(constants::FFT_WINDOW / 2) + 1};
-
-    void createBars(std::vector<float> &barVertexData) const;
-    [[nodiscard]] std::vector<float> createBar(float left, float right, float bottom, float top) const;
 };

@@ -12,9 +12,9 @@ Renderer::~Renderer() {
     cleanup();
 }
 
-void Renderer::init(const std::vector<float> &initVertexData) {
+void Renderer::init(const std::vector<float> &initVertexData, std::vector<float> &initBarVertexData) {
     m_waveformVis->init(initVertexData);
-    m_fftVis->init({});
+    m_fftVis->init(initBarVertexData);
 
     // Initial window bounds settings
     m_windowManager.onResize(constants::SCR_WIDTH, constants::SCR_HEIGHT);

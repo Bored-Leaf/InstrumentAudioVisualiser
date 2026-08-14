@@ -13,7 +13,7 @@ public:
     Renderer(const WaveformVisualisation &waveformVis, const FFTVisualisation &fftVis);
     ~Renderer();
 
-    void init(const std::vector<float> &initVertexData);
+    void init(const std::vector<float> &initVertexData, std::vector<float> &initBarVertexData);
     void update();
 
     void onResize(int width, int height);

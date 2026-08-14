@@ -52,8 +52,8 @@ Want it to simulate real-time flow
 
 # Rendering waveform *and* FFT with main thread and make look nice
 - Damn ending up being a whole rendering system/object
-- [ ] Render the FFT and waveform with main thread
-	- [ ] Normalise fft output from 0 to 1
+- [x] Render the FFT and waveform with main thread
+	- [x] Normalise fft output from 0 to 1
 	- FFT block based only for now
 
 # Polishing/Optimising
@@ -61,12 +61,11 @@ Want it to simulate real-time flow
 	- [ ] Correctly adjusts size when changing window size (maybe need to change away from using constansts::SCR_HEIGHT/WIDTH all the time, maybe only use for initialisation)
 		- [ ] window_manager onResize actually working with glfwGetUserPointer and glfwSetUserPointer
 		- [ ] Fix button projection for window resizing
-			- [ ] Including changing the button positions alongside the renders
+		- [ ] Hopefully fixes the rendering updating with window reSizing as well, whole point of onResize anyway
 	- [ ] window_manager onDrag is now actually when dragging near the split point instead of just clicking
 		- [ ] Needs logic in the glfw callback to only call onDrag when initial mouse click was near the split point or something like that
 - [ ] Better UI
 	- [ ] Thing like a renderer to clean up main
-	- [ ] UI Bug
 	- [ ] Use Nativefiledialog-extended to choose the .wav file themselves.
 		- [ ] Button to choose the wav file.
 	- [ ] button icons and effect when hovering mouse over
@@ -79,6 +78,7 @@ Want it to simulate real-time flow
 - [ ] Can change the amount of FFT bins at runtime
 	- [ ] Text box or slider
 	- [ ] Can choose whether there are spaces between each bar or not
+	- [ ] Have to re-compute windowing function coefficient every time changed
 - [ ] Play the audio file
 	- [ ] Play the actual audio from the file
 	- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
@@ -89,6 +89,8 @@ Want it to simulate real-time flow
 - [ ] FFT Line Graph
 - [ ] Spectrogram
 - [ ] Have UI option to switch between the 3
+	- [ ] Make similar UI option for selecting between a user defined floor and ceiling vs data derived floor and ceiling per frame data.
+		- [ ] Avoid text boxes for now and just use scroll wheel up and down to change them, text boxes seem a bit too hard for now
 - This is more so for more practice working with graphics and UI
  
 # Real-time audio
