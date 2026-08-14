@@ -13,7 +13,7 @@ public:
     
     bool write(const std::vector<T> &chunk) {
         if (chunk.size() > m_capacity - m_size) {
-            std::print("{} >> Too big to write: {} in available space: {}\n", m_name, chunk.size(), m_capacity - m_size);
+            // std::print("{} >> Too big to write: {} in available space: {}\n", m_name, chunk.size(), m_capacity - m_size);
             return false;
         }
 
@@ -30,7 +30,7 @@ public:
     
     bool read(std::vector<T> &out, const int count) {
         if (m_size < count) {
-            std::print("{} >> Too little to read: {} in occupied space {}\n", m_name,  count, m_size);
+            // std::print("{} >> Too little to read: {} in occupied space {}\n", m_name,  count, m_size);
             return false;
         }
 
