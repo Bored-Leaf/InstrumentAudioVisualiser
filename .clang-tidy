@@ -10,6 +10,7 @@ Checks: >
   -readability-implicit-bool-conversion,
   -readability-suspicious-call-argument,
   -readability-suspicious-call-arguments,
+  -readability-braces-around-statements,
   -bugprone-easily-swappable-parameters,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
