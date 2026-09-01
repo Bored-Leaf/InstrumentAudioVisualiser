@@ -1,19 +1,17 @@
 #pragma once
 
 #include <vector>
-#include <print>
 
 template <typename T>
 class CircularBuffer {
 public:
     CircularBuffer(const int size, std::string name) 
-                            : m_capacity{size}
+                            : m_name(std::move(name))
                             , m_buffer(size)
-                            , m_name(name) {}
+                            , m_capacity{size} {}
     
     bool write(const std::vector<T> &chunk) {
         if (chunk.size() > m_capacity - m_size) {
-            // std::print("{} >> Too big to write: {} in available space: {}\n", m_name, chunk.size(), m_capacity - m_size);
             return false;
         }
 
@@ -30,7 +28,6 @@ public:
     
     bool read(std::vector<T> &out, const int count) {
         if (m_size < count) {
-            // std::print("{} >> Too little to read: {} in occupied space {}\n", m_name,  count, m_size);
             return false;
         }
 

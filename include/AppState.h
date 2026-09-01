@@ -9,6 +9,8 @@
 #include "CircularBuffer.h"
 #include "WAVReader.h"
 
+#include "renderer/renderer.hpp"
+
 struct Button {
     float leftX{};
     float rightX{};
@@ -36,4 +38,11 @@ struct AppState {
     CircularBuffer<std::complex<float>> fftBuffer;
     std::atomic<bool> running;
     std::mutex mtx;
+};
+
+struct RealAppState {
+    RealAppState(Renderer &inRenderer) : renderer(inRenderer) {}
+    RealAppState(const RealAppState&) = delete;
+
+    Renderer& renderer;
 };

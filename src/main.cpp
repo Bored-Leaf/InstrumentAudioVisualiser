@@ -25,13 +25,10 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
 
 void audioWorker(AppState& state);
 
-void FFTFloorCeilingTesting(std::unique_ptr<WAVReader> &wavFile);
-
 // TODO: use glfwGetWindowUserPointer to pass it instead of global struct
 AppState appState;
 
-int main() {
-
+int main() {    
     GLFWwindow* window{setupGLFW()};
     if (window) {
         std::print("GLFW Window setup successful\n");
@@ -44,8 +41,13 @@ int main() {
     FFTVisualisation fftVis("shaders/fftVert.vert", "shaders/fftFrag.frag");
     Renderer renderer{waveformVis, fftVis};
 
+    RealAppState realAppState(renderer);
+
+    // NEXT: Figure way to move this to setupGLFW(). Maybe make renderer.init() have the visualisations setup
+    // their m_shaders in their init() instead of during object instantiation?
+    glfwSetWindowUserPointer(window, &realAppState);
+
     appState.WAVFile = std::make_unique<WAVReader>("WAVFiles/Ouch-2.wav");
-    // FFTFloorCeilingTesting(appState.WAVFile);
 
     // Move to UI implementation
     appState.UIShader = std::make_unique<Shader>("shaders/UI.vert", "shaders/UIFrag.frag");
@@ -81,7 +83,6 @@ int main() {
     std::vector<std::complex<float>> initFFTZeroValues(constants::FFT_WINDOW);
     fft_utils::createBars(initBarVertexData, initFFTZeroValues);
 
-    // TODO: use glfwGetWindowUserPointer to pass to callback functions for onResize and onDrag without a global object
     renderer.init(initWaveformVertexData, initBarVertexData);
     unsigned int waveformVBO{renderer.getWaveformVis()->getVBO()};
     unsigned int fftVBO{renderer.getFFTVis()->getVBO()};
@@ -121,7 +122,7 @@ int main() {
                     // CLEANUP: move to waveformVis or something nice
                     waveform_utils::updateWavVerticies(waveformVBO, waveformVerticies);
                 } else {
-                    //std::print("Buffer is full, won't write\n");
+                    // std::print("Buffer is full, won't write\n");
                 }
             }
 
@@ -129,7 +130,6 @@ int main() {
                 std::lock_guard<std::mutex> lock(appState.mtx);
                 bool success{appState.fftBuffer.read(fftOutput, constants::FFT_WINDOW)};
                 if (success) {
-                    // TODO: Refactor when normalise actually normalises
                     // CLEANUP: move to fftVis or something nice
                     std::vector<float> barData{};
                     fft_utils::createBars(barData, fftOutput);
@@ -207,11 +207,14 @@ GLFWwindow* setupGLFW() {
         return nullptr;
     }
 
+    
+
     return window;
 }
 
-void framebufferSize_callback(GLFWwindow* /*window*/, int width, int height) {
-    glViewport(0, 0, width, height);
+void framebufferSize_callback(GLFWwindow* window, int width, int height) {
+    auto *realAppState = static_cast<RealAppState*>(glfwGetWindowUserPointer(window));
+    realAppState->renderer.onResize(width, height);
 
     appState.uiProjection = glm::ortho(0.0F, static_cast<float>(width), 0.0F, static_cast<float>(height));
 }
@@ -267,13 +270,11 @@ void audioWorker(AppState& state) {
         if (totalOffset > state.WAVFile->getTotalSampleCount()) {
             if(!state.shouldLoop) {
                 state.isPlaying = false;
-                std::print("{}\n", newSamples.size());
             }
             totalOffset = 0;
         }
         if (state.isPlaying) {
-            // Waveform sample pushing
-
+            // Waveform sample pushing to GPU
             float samplesToAdvance = sampleRate * dtTime;
             //Get fractional part
             fractionalLoss = samplesToAdvance - static_cast<int>(samplesToAdvance);
@@ -324,28 +325,4 @@ void audioWorker(AppState& state) {
         // different read/write speeds
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
-}
-
-void FFTFloorCeilingTesting(std::unique_ptr<WAVReader> &wavFile) {
-    std::println("FFT testing");
-    float max{};
-    float min{};
-    for (int i = 0; i < wavFile->getTotalSampleCount();i += wavFile->getSamplesOffset(1024, i).size()) {
-        if (wavFile->getTotalSampleCount() - i < 1024) continue;
-        std::vector<float> samples{appState.WAVFile->getSamplesOffset(1024, i)};
-        std::vector<std::complex<float>> input{};
-        input.assign(samples.begin(), samples.end());
-        std::vector<std::complex<float>> output{fft::compute(input)};
-
-        float fakemax{};
-        float fakemin{};
-        for (auto &num : output) {
-            fakemax = std::max(std::abs(num), fakemax);
-            fakemin = std::min(std::abs(num), fakemin);
-        }
-        max = std::max(fakemax, max);
-        min = std::min(fakemin, min);
-    }
-    std::println("largest bin height {}", max);
-    std::println("smallest bin height {}", min);
 }

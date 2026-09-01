@@ -20,8 +20,8 @@ private:
     Region m_waveformWindow;
     Region m_fftWindow;
     
-    float m_windowHeight{};
-    float m_windowWidth{};
+    float m_windowHeight{constants::SCR_HEIGHT};
+    float m_windowWidth{constants::SCR_WIDTH};
     float m_horizontalSplitRatio{0.5};
 
     void updateLayout();

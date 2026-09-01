@@ -58,10 +58,10 @@ Want it to simulate real-time flow
 
 # Polishing/Optimising
 - [ ] Windowing stuff
-	- [ ] Correctly adjusts size when changing window size (maybe need to change away from using constansts::SCR_HEIGHT/WIDTH all the time, maybe only use for initialisation)
-		- [ ] window_manager onResize actually working with glfwGetUserPointer and glfwSetUserPointer
+	- [] Correctly adjusts size when changing window size (maybe need to change away from using constansts::SCR_HEIGHT/WIDTH all the time, maybe only use for initialisation)
+		- [x] window_manager onResize actually working with glfwGetUserPointer and glfwSetUserPointer
 		- [ ] Fix button projection for window resizing
-		- [ ] Hopefully fixes the rendering updating with window reSizing as well, whole point of onResize anyway
+		- [x] Hopefully fixes the rendering updating with window reSizing as well, whole point of onResize anyway
 	- [ ] window_manager onDrag is now actually when dragging near the split point instead of just clicking
 		- [ ] Needs logic in the glfw callback to only call onDrag when initial mouse click was near the split point or something like that
 - [ ] Better UI
@@ -77,7 +77,7 @@ Want it to simulate real-time flow
 		- [ ] Maybe can be used to reduce the buffer capacity as it won't need to hold as much data if the gpu will update the samples/vertex data instead.
 - [ ] Can change the amount of FFT bins at runtime
 	- [ ] Text box or slider
-	- [ ] Can choose whether there are spaces between each bar or not
+	- [ ] Can choose whether there are spaces between each bar or not if the amount of bars are small enough
 	- [ ] Have to re-compute windowing function coefficient every time changed
 - [ ] Play the audio file
 	- [ ] Play the actual audio from the file
@@ -85,9 +85,14 @@ Want it to simulate real-time flow
 		- [ ] If waveform is longer than the window then when the line in middle make it stay in middle until the end of the waveform can reach the right of the window
 
 # More FFT visuals
+- [ ] Hann gain-compensation factor
 - [ ] Have option of block based or sliding window
+- [ ] FFT Bar Graph
+	- [ ] Make bars different colours based on height
+		- [ ] Whole bar different colour or gradient?
 - [ ] FFT Line Graph
 - [ ] Spectrogram
+	- [ ] If not too hard
 - [ ] Have UI option to switch between the 3
 	- [ ] Make similar UI option for selecting between a user defined floor and ceiling vs data derived floor and ceiling per frame data.
 		- [ ] Avoid text boxes for now and just use scroll wheel up and down to change them, text boxes seem a bit too hard for now
@@ -99,11 +104,11 @@ Add option when opening application if file or live instrument
 - [ ] if live instrument then yeah...
 
 # Final Polishing 
-Mostly a combination of a bunch of little stuff
+Mostly little stuff
 - [ ] Peak holds on fft line/bar graph
 	- [ ] Button to reset peak holds
+- [ ] The smoothness of fft lines/bar graphs going down overtime instead of jumpy and jerky
 - [ ] faint grid lines on all relevant graphs to make look nice
-
 
 # Project end
 - [ ] Finish

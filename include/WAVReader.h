@@ -11,13 +11,13 @@ public:
     WAVReader(const std::string& filePath);
     ~WAVReader(){}
     
-    uint32_t getSampleRate() const override;
-    uint16_t getChannels() const override;
-    uint16_t getBitsPerSample() const override;
-    uint32_t getTotalSampleCount() const;
+    [[nodiscard]] uint32_t getSampleRate() const override;
+    [[nodiscard]] uint16_t getChannels() const override;
+    [[nodiscard]] uint16_t getBitsPerSample() const override;
+    [[nodiscard]] uint32_t getTotalSampleCount() const;
 
-    std::vector<float> getSamples(int amount);
-    std::vector<float> getSamplesOffset(int amount, int offset);
+    [[nodiscard]] std::vector<float> getSamples(int amount);
+    [[nodiscard]] std::vector<float> getSamplesOffset(int amount, int offset);
 private:
     drwav m_wav;
     uint32_t m_sampleRate;
