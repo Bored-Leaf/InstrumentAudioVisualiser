@@ -1,6 +1,7 @@
 #include "renderer/renderer.hpp"
 #include "constants.hpp"
 #include "renderer/visualisation.hpp"
+#include "shader.h"
 
 #include <memory>
  
@@ -22,7 +23,8 @@ void Renderer::init(const std::vector<float> &initVertexData, std::vector<float>
 
 void Renderer::update() {
     glClearColor(0.2F, 0.3F, 0.3F, 1.0F);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glDepthMask(GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_windowManager.getWaveformRegion().applyViewport();
     m_waveformVis->draw(m_windowManager.getProjection());

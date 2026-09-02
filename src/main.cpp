@@ -207,7 +207,7 @@ GLFWwindow* setupGLFW() {
         return nullptr;
     }
 
-    
+    glEnable(GL_DEPTH_TEST);
 
     return window;
 }
