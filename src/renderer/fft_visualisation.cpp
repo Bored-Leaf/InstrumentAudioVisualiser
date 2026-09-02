@@ -1,9 +1,4 @@
-#include <print>
-#include <algorithm>
-#include <random>
-
 #include "renderer/fft_visualisation.hpp"
-#include "constants.hpp"
 #include "shader.h"
 
 FFTVisualisation::FFTVisualisation(const char *vertPath, const char *fragPath)

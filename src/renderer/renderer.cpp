@@ -50,6 +50,10 @@ const Visualisation* Renderer::getFFTVis() const {
     return m_fftVis.get();
 }
 
+WindowManager& Renderer::getWindowManager() {
+    return m_windowManager;
+}
+
 void Renderer::cleanup() {
     m_waveformVis->cleanup();
     m_fftVis->cleanup();

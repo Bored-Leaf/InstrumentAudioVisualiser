@@ -2,9 +2,8 @@
 
 #include <memory>
 
-#include "fft_visualisation.hpp"
-#include "window_manager.hpp"
-#include "visualisation.hpp"
+#include "renderer/window_manager.hpp"
+#include "renderer/visualisation.hpp"
 #include "renderer/waveform_visualisation.hpp"
 #include "renderer/fft_visualisation.hpp"
 

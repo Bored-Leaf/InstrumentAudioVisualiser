@@ -1,5 +1,6 @@
-#include "window_manager.hpp"
 #include <algorithm>
+
+#include "renderer/window_manager.hpp"
 
 void WindowManager::onDrag(double mouseY) {
     //convert GLFW mouse pos to opengl space
