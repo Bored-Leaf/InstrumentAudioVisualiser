@@ -5,6 +5,7 @@
 #include <mutex>
 #include <complex>
 
+#include "constants.hpp"
 #include "shader.h"
 #include "CircularBuffer.h"
 #include "WAVReader.h"
@@ -38,6 +39,12 @@ struct AppState {
     CircularBuffer<std::complex<float>> fftBuffer;
     std::atomic<bool> running;
     std::mutex mtx;
+
+    uint buttonsVBO;
+    uint buttonsVAO;
+
+    int windowWidth{static_cast<int>(constants::SCR_WIDTH)};
+    int windowHeight{static_cast<int>(constants::SCR_HEIGHT)};
 };
 
 struct RealAppState {

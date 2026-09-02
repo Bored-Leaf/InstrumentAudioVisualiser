@@ -60,7 +60,7 @@ Want it to simulate real-time flow
 - [ ] Windowing stuff
 	- [] Correctly adjusts size when changing window size (maybe need to change away from using constansts::SCR_HEIGHT/WIDTH all the time, maybe only use for initialisation)
 		- [x] window_manager onResize actually working with glfwGetUserPointer and glfwSetUserPointer
-		- [ ] Fix button projection for window resizing
+		- [x] Fix button projection for window resizing
 		- [x] Hopefully fixes the rendering updating with window reSizing as well, whole point of onResize anyway
 	- [ ] window_manager onDrag is now actually when dragging near the split point instead of just clicking
 		- [ ] Needs logic in the glfw callback to only call onDrag when initial mouse click was near the split point or something like that
@@ -69,6 +69,7 @@ Want it to simulate real-time flow
 	- [ ] Use Nativefiledialog-extended to choose the .wav file themselves.
 		- [ ] Button to choose the wav file.
 	- [ ] button icons and effect when hovering mouse over
+	- [ ] Fragment shaders rework
 - [ ] Do something about WaveformUtils and FFTUtils to make nicer
 - [ ] Change so instead of writing and reading 10s of thousands of elements per frame to a lot less.
 	- [ ] I assume changing sampleAmount to only new samples (which is a couple hundred a frame)
@@ -83,6 +84,7 @@ Want it to simulate real-time flow
 	- [ ] Play the actual audio from the file
 	- [ ] Change the waveform "animation" to a vertical line going through so its easier to track
 		- [ ] If waveform is longer than the window then when the line in middle make it stay in middle until the end of the waveform can reach the right of the window
+- [ ] Waveform and FFT fragment shaders rework
 
 # More FFT visuals
 - [ ] Hann gain-compensation factor

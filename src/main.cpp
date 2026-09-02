@@ -54,26 +54,29 @@ int main() {
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
-        760, 570, 0.0F,
-        680, 570, 0.0F,
-        760, 510, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 30, 0.0F,
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 30, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 90, 0.0F,
 
-        680, 570, 0.0F,
-        680, 510, 0.0F,
-        760, 510, 0.0F,
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 30, 0.0F,
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 90, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 90, 0.0F,
 
         // Loop Button
-        760, 480, 0.0F,
-        680, 480, 0.0F,
-        760, 420, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 120, 0.0F,
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 120, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 180, 0.0F,
 
-        680, 480, 0.0F,
-        680, 420, 0.0F,
-        760, 420, 0.0F
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 120, 0.0F,
+        constants::SCR_WIDTH - 120, constants::SCR_HEIGHT - 180, 0.0F,
+        constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 180, 0.0F
     };
 
     // Play button
     appState.playButton = {.leftX=680, .rightX=760, .topY=30, .bottomY=90, .isactive=false};
+    // 95%
+    // 85%
+    // appState.playButton = {.leftX=constants::SCR_WIDTH * 0.85F, .rightX=constants::SCR_WIDTH * 0.95F, .topY=0, .bottomY=constants::SCR_HEIGHT, .isactive=false};
 
     // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
@@ -92,6 +95,8 @@ int main() {
 
     glGenVertexArrays(1, &UIVAO);
     glGenBuffers(1, &uiButtonsVBO);
+    appState.buttonsVBO = uiButtonsVBO;
+    appState.buttonsVAO = UIVAO;
 
     glBindVertexArray(UIVAO);
     glBindBuffer(GL_ARRAY_BUFFER, uiButtonsVBO);
@@ -143,7 +148,7 @@ int main() {
 
         // UI
         // obviously in the ui implementation
-        glViewport(0, 0, 800, 600);
+        glViewport(0, 0, appState.windowWidth, appState.windowHeight);
         appState.UIShader->use();
         appState.UIShader->setMat4("projection", appState.uiProjection);
 
@@ -215,6 +220,38 @@ GLFWwindow* setupGLFW() {
 void framebufferSize_callback(GLFWwindow* window, int width, int height) {
     auto *realAppState = static_cast<RealAppState*>(glfwGetWindowUserPointer(window));
     realAppState->renderer.onResize(width, height);
+
+    std::vector<float> uiButtonsVerticies{
+        // Play Button
+        static_cast<float>(width - 40), static_cast<float>(height - 30), 0.0F,
+        static_cast<float>(width - 120), static_cast<float>(height - 30), 0.0F,
+        static_cast<float>(width - 40), static_cast<float>(height - 90), 0.0F,
+
+        static_cast<float>(width - 120), static_cast<float>(height - 30), 0.0F,
+        static_cast<float>(width - 120), static_cast<float>(height - 90), 0.0F,
+        static_cast<float>(width - 40), static_cast<float>(height - 90), 0.0F,
+
+        // Loop Button
+        static_cast<float>(width - 40), static_cast<float>(height - 120), 0.0F,
+        static_cast<float>(width - 120), static_cast<float>(height - 120), 0.0F,
+        static_cast<float>(width - 40), static_cast<float>(height - 180), 0.0F,
+
+        static_cast<float>(width - 120), static_cast<float>(height - 120), 0.0F,
+        static_cast<float>(width - 120), static_cast<float>(height - 180), 0.0F,
+        static_cast<float>(width - 40), static_cast<float>(height - 180), 0.0F
+    };
+
+    glBindVertexArray(appState.buttonsVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, appState.buttonsVBO);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(uiButtonsVerticies.size() * sizeof(float)), uiButtonsVerticies.data(), GL_STATIC_DRAW);
+
+    appState.playButton = {.leftX=static_cast<float>(width - 120), .rightX=static_cast<float>(width - 40), .topY=30, .bottomY=90, .isactive=false};
+    appState.loopButton = {.leftX=static_cast<float>(width - 120), .rightX=static_cast<float>(width - 40), .topY=120, .bottomY=190, .isactive=false};
+
+    appState.windowWidth = width;
+    appState.windowHeight = height;
+
+    glViewport(0, 0, width, height);
 
     appState.uiProjection = glm::ortho(0.0F, static_cast<float>(width), 0.0F, static_cast<float>(height));
 }
