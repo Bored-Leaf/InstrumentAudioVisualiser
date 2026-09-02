@@ -19,8 +19,9 @@ public:
     void onResize(int width, int height);
     void onDrag(double mouseY);
 
-    [[nodiscard]] const Visualisation* getWaveformVis() const;
-    [[nodiscard]] const Visualisation* getFFTVis() const;
+    [[nodiscard]] const Visualisation*  getWaveformVis() const;
+    [[nodiscard]] const Visualisation*  getFFTVis() const;
+    [[nodiscard]] WindowManager&        getWindowManager();
 private:
     WindowManager m_windowManager{};
     std::unique_ptr<Visualisation> m_waveformVis;

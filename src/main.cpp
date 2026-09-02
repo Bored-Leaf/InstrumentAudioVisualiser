@@ -22,6 +22,7 @@ GLFWwindow* setupGLFW();
 void framebufferSize_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouseButton_callback(GLFWwindow* window,int button, int action, int mods);
+void mousePos_callback(GLFWwindow* window, double xpos, double ypos);
 
 void audioWorker(AppState& state);
 
@@ -198,6 +199,7 @@ GLFWwindow* setupGLFW() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
     glfwSetMouseButtonCallback(window, mouseButton_callback);
+    glfwSetCursorPosCallback(window, mousePos_callback);
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
@@ -213,7 +215,7 @@ GLFWwindow* setupGLFW() {
 
 void framebufferSize_callback(GLFWwindow* window, int width, int height) {
     auto *realAppState = static_cast<RealAppState*>(glfwGetWindowUserPointer(window));
-    realAppState->renderer.onResize(width, height);
+    realAppState->windowManager.onResize(width, height);
 
     std::vector<float> uiButtonsVerticies{
         // Play Button
@@ -256,10 +258,11 @@ void processInput(GLFWwindow* window) {
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*/) {
+    auto *realAppState = static_cast<RealAppState*>(glfwGetWindowUserPointer(window));
+    double xpos{};
+    double ypos{};
+    glfwGetCursorPos(window, &xpos, &ypos);
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        double xpos{};
-        double ypos{};
-        glfwGetCursorPos(window, &xpos, &ypos);
         // playButton pressed
         if (xpos > appState.playButton.leftX && xpos < appState.playButton.rightX &&
             ypos > appState.playButton.topY && ypos < appState.playButton.bottomY) {
@@ -270,9 +273,24 @@ void mouseButton_callback(GLFWwindow* window,int button, int action, int /*mods*
             ypos > appState.loopButton.topY && ypos < appState.loopButton.bottomY) {
                 appState.shouldLoop = !appState.shouldLoop;
             }
-
         // POLISH: Use uniforms for when mouse is hovering over the button.
         
+        float splitBoundary{realAppState->windowManager.getWindowHeight() * (1.0F - realAppState->windowManager.getHorizontalSplit())};
+        float threshold{15.0F};
+        if (std::abs(ypos - splitBoundary) < threshold) {
+            realAppState->windowManager.setIsDraggingActive(true);
+        }
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        realAppState->windowManager.setIsDraggingActive(false);
+    }
+}
+
+void mousePos_callback(GLFWwindow* window, double xpos, double ypos) {
+    auto *realAppState = static_cast<RealAppState*>(glfwGetWindowUserPointer(window));
+    if (realAppState->windowManager.getIsDraggingActive()) {
+        realAppState->windowManager.onDrag(ypos);
     }
 }
 

@@ -1,7 +1,12 @@
 #include "window_manager.hpp"
+#include <algorithm>
 
 void WindowManager::onDrag(double mouseY) {
-    m_horizontalSplitRatio = static_cast<float>(mouseY) / m_windowHeight;
+    //convert GLFW mouse pos to opengl space
+    float convertedY{m_windowHeight - static_cast<float>(mouseY)};
+
+    convertedY = std::clamp(convertedY,m_windowHeight * 0.1F, m_windowHeight * 0.9F);
+    m_horizontalSplitRatio = convertedY / m_windowHeight;
 
     updateLayout();
 }
@@ -23,6 +28,26 @@ const Region& WindowManager::getFFTRegon() const {
 
 const glm::mat4& WindowManager::getProjection() const {
     return m_projection;
+}
+
+float WindowManager::getHorizontalSplit() const {
+    return m_horizontalSplitRatio;
+}
+
+bool WindowManager::getIsDraggingActive() const {
+    return m_isDraggingActive;
+}
+
+float WindowManager::getWindowHeight() const {
+    return m_windowHeight;
+}
+
+float WindowManager::getWindowWidth() const {
+    return m_windowWidth;
+}
+
+void WindowManager::setIsDraggingActive(bool value) {
+    m_isDraggingActive = value;
 }
 
 void WindowManager::updateLayout() {

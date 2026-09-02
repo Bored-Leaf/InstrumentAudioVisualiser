@@ -14,6 +14,13 @@ public:
     [[nodiscard]] const Region&     getFFTRegon() const;
     [[nodiscard]] const glm::mat4&  getProjection() const;
 
+    [[nodiscard]] float             getHorizontalSplit() const; 
+    [[nodiscard]] bool              getIsDraggingActive() const;
+    [[nodiscard]] float             getWindowHeight() const;
+    [[nodiscard]] float             getWindowWidth() const;
+
+    void                            setIsDraggingActive(bool value);
+
 private:
     glm::mat4 m_projection{glm::ortho(0.0F, constants::SCR_WIDTH, 0.0F, constants::SCR_HEIGHT)};
 
@@ -22,7 +29,9 @@ private:
     
     float m_windowHeight{constants::SCR_HEIGHT};
     float m_windowWidth{constants::SCR_WIDTH};
-    float m_horizontalSplitRatio{0.5};
+    float m_horizontalSplitRatio{0.5F};
+
+    bool m_isDraggingActive{false};
 
     void updateLayout();
 };

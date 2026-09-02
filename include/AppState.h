@@ -48,8 +48,8 @@ struct AppState {
 };
 
 struct RealAppState {
-    RealAppState(Renderer &inRenderer) : renderer(inRenderer) {}
+    RealAppState(Renderer &inRenderer) : windowManager(inRenderer.getWindowManager()) {}
     RealAppState(const RealAppState&) = delete;
 
-    Renderer& renderer;
+    WindowManager& windowManager;
 };
