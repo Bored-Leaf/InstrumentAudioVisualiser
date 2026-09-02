@@ -72,13 +72,7 @@ int main() {
         constants::SCR_WIDTH - 40, constants::SCR_HEIGHT - 180, 0.0F
     };
 
-    // Play button
     appState.playButton = {.leftX=680, .rightX=760, .topY=30, .bottomY=90, .isactive=false};
-    // 95%
-    // 85%
-    // appState.playButton = {.leftX=constants::SCR_WIDTH * 0.85F, .rightX=constants::SCR_WIDTH * 0.95F, .topY=0, .bottomY=constants::SCR_HEIGHT, .isactive=false};
-
-    // Loop button
     appState.loopButton = {.leftX=680, .rightX=760, .topY=120, .bottomY=190, .isactive=false};
 
     std::vector<float> initWaveformVertexData{waveform_utils::wavSamplesToVertices(appState.WAVFile, constants::WAVEFORM_WINDOW, 0)};
